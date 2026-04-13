@@ -38,6 +38,15 @@ AI-коуч в Telegram, заменяющий живого коуча / псих
 - **Анимации**: IntersectionObserver, класс `.r` → `.r.v`, задержки `.d1`–`.d4`
 - **Адаптив**: CSS Grid, media queries на 820px и 640px
 
+## Обязательные MCP-серверы
+
+- **Context7** (`context7`) — используется для получения актуальной документации по библиотекам и API. При старте сессии агент **обязан** проверить доступность Context7 (через `ToolSearch` с запросом `context7`). Если инструменты Context7 не загружены — **немедленно сообщить пользователю** и предложить перезапустить сессию.
+
+## Правила деплоя
+
+- **Код — только через git.** Все изменения кода доставляются на VPS через `git push` → CI/CD (GitHub Actions). Никогда не редактировать код напрямую на сервере по SSH.
+- **SSH — только для не-git операций**: `.env` файлы, gitignored конфиги, `docker compose restart`, просмотр логов, другие серверные операции.
+
 ## Ключевые принципы
 
 ### Квиз (index.html в обоих сайтах)
@@ -63,9 +72,9 @@ AI-коуч в Telegram, заменяющий живого коуча / псих
 
 ### Стек
 - **Python 3.11+**, aiogram 3, asyncpg, httpx
-- **LLM**: OpenRouter API (модель `anthropic/claude-sonnet-4-20250514`)
-- **БД**: PostgreSQL (на VPS, подключение через asyncpg)
-- **Деплой**: systemd на VPS, polling mode
+- **LLM**: OpenRouter API (пресет `@preset/electrocoach`, модель выбирается на стороне OpenRouter)
+- **БД**: PostgreSQL 16 (Docker контейнер, подключение через asyncpg)
+- **Деплой**: Docker Compose на VPS (mentors@193.124.56.183), CI/CD через GitHub Actions
 
 ### Структура bot/
 ```
@@ -97,15 +106,21 @@ bot/
 - `DATABASE_URL` — строка подключения PostgreSQL
 
 ### Текущий статус
-- **Код написан полностью**, все модули готовы
-- **Не сделано**: установка зависимостей, деплой на VPS, тестирование
-- Следующий шаг: SSH-доступ к серверу → установка PostgreSQL + Python → деплой → запуск
+- **Задеплоен** на VPS в Docker (bot + PostgreSQL)
+- **CI/CD**: push в main с изменениями в `bot/` → GitHub Actions → SSH → git pull → docker compose up --build
+- **Пресет OpenRouter**: `@preset/electrocoach`
 
-### Запуск
+### Запуск (локально)
 ```bash
 cd bot
 pip install -r requirements.txt
 python -m src.main
+```
+
+### Запуск (продакшен)
+```bash
+cd ~/electrocoach/bot
+docker compose up -d --build
 ```
 
 ### Принципы (из spec/constitution.md)
@@ -117,7 +132,6 @@ python -m src.main
 
 ## Что ещё не сделано
 
-- **Деплой бота на VPS** — код готов, нужен SSH-доступ
 - **Нейминг** — ElectroCoach рабочее название, финальное не выбрано
 - **Деплой сайтов** — лендинги пока только локальные HTML
 - **Аналитика** — трекинг, UTM, события квиза
