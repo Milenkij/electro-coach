@@ -22,7 +22,7 @@ Polling mode (не webhook) — проще для MVP, не нужен доме�
 - `db.py` — asyncpg pool, CRUD для users/sessions/messages
 - `llm.py` — OpenRouter chat completions, загрузка системного промпта
 - `session.py` — FSM сессии (idle → active → awaiting_rating → idle)
-- `bot.py` — aiogram handlers для команд и текстовых сообщений
+- `bot.py` — aiogram handlers для команд, текстовых и нетекстовых сообщений
 - `main.py` — инициализация и запуск
 
 ## База данных

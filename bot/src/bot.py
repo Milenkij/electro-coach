@@ -75,7 +75,13 @@ async def handle_chat_member(update: types.ChatMemberUpdated) -> None:
 @router.message()
 async def handle_text(message: types.Message) -> None:
     user = message.from_user
-    if user is None or not message.text:
+    if user is None:
+        return
+
+    if not message.text:
+        await message.answer(
+            "Пока я работаю только с текстом. Напиши словами — так я смогу помочь."
+        )
         return
 
     # Restore state if needed (bot might have restarted)
