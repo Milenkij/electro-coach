@@ -102,17 +102,27 @@ async def rate_session(session_id: UUID, rating: int) -> None:
         )
 
 
-async def save_message(session_id: UUID, role: str, content: str) -> None:
+async def save_message(
+    session_id: UUID,
+    role: str,
+    content: str,
+    prompt_tokens: int | None = None,
+    completion_tokens: int | None = None,
+    cost: object | None = None,
+) -> None:
     pool = _get_pool()
     async with pool.acquire() as conn:
         await conn.execute(
             """
-            INSERT INTO messages (session_id, role, content)
-            VALUES ($1, $2, $3)
+            INSERT INTO messages (session_id, role, content, prompt_tokens, completion_tokens, cost)
+            VALUES ($1, $2, $3, $4, $5, $6)
             """,
             session_id,
             role,
             content,
+            prompt_tokens,
+            completion_tokens,
+            cost,
         )
         await conn.execute(
             "UPDATE sessions SET message_count = message_count + 1 WHERE id = $1",

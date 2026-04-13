@@ -19,6 +19,14 @@
 ## Этап 3.1: Нетекстовые сообщения (Сценарий 4)
 - [x] В `bot.py` handle_text: вместо молчаливого return на нетекстовые сообщения — ответить пользователю
 
+## Этап 3.2: Учёт токенов и стоимости (Сценарий 5)
+- [x] Миграция `migrations/002_add_token_usage.sql` — колонки `prompt_tokens`, `completion_tokens`, `cost` в `messages`
+- [x] `llm.py` — `chat()` возвращает `LLMResponse` dataclass с content + usage, парсинг `usage` из ответа OpenRouter
+- [x] `db.py` — `save_message()` принимает и записывает `prompt_tokens`, `completion_tokens`, `cost`
+- [x] `session.py` — передаёт usage из `LLMResponse` в `save_message()`
+- [x] `bot.py` — логирует текст user-сообщений в stdout
+- [x] `main.py` — применяет все миграции из `migrations/` при старте (glob + sort)
+
 ## Этап 4: Тестирование
 - [ ] Локальный запуск
 - [ ] Прогон полного сценария сессии

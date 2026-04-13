@@ -1,9 +1,19 @@
 import logging
+from dataclasses import dataclass
+from decimal import Decimal
 from pathlib import Path
 
 import httpx
 
 from .config import config
+
+
+@dataclass(frozen=True)
+class LLMResponse:
+    content: str
+    prompt_tokens: int | None = None
+    completion_tokens: int | None = None
+    cost: Decimal | None = None
 
 logger = logging.getLogger(__name__)
 
@@ -18,8 +28,8 @@ def _load_system_prompt() -> str:
     return _system_prompt
 
 
-async def chat(messages: list[dict[str, str]]) -> str:
-    """Send messages to OpenRouter and return assistant response."""
+async def chat(messages: list[dict[str, str]]) -> LLMResponse:
+    """Send messages to OpenRouter and return assistant response with usage."""
     system_prompt = _load_system_prompt()
 
     payload = {
@@ -47,4 +57,17 @@ async def chat(messages: list[dict[str, str]]) -> str:
         raise RuntimeError(f"OpenRouter API error: {response.status_code}")
 
     data = response.json()
-    return data["choices"][0]["message"]["content"]
+    content = data["choices"][0]["message"]["content"]
+
+    usage = data.get("usage") or {}
+    prompt_tokens = usage.get("prompt_tokens")
+    completion_tokens = usage.get("completion_tokens")
+    raw_cost = usage.get("cost")
+    cost = Decimal(str(raw_cost)) if raw_cost is not None else None
+
+    return LLMResponse(
+        content=content,
+        prompt_tokens=prompt_tokens,
+        completion_tokens=completion_tokens,
+        cost=cost,
+    )

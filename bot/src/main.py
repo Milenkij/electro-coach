@@ -14,7 +14,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-MIGRATION_PATH = str(Path(__file__).resolve().parent.parent / "migrations" / "001_init.sql")
+_MIGRATIONS_DIR = Path(__file__).resolve().parent.parent / "migrations"
 
 
 async def main() -> None:
@@ -22,7 +22,8 @@ async def main() -> None:
 
     # Init database
     await db.init_pool(config.database_url)
-    await db.run_migration(MIGRATION_PATH)
+    for sql_file in sorted(_MIGRATIONS_DIR.glob("*.sql")):
+        await db.run_migration(str(sql_file))
     logger.info("Database ready")
 
     # Init bot

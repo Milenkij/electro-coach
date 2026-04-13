@@ -101,17 +101,24 @@ async def handle_message(user_id: int, text: str) -> str:
 
     # Get LLM response
     try:
-        response = await llm.chat(messages)
+        llm_response = await llm.chat(messages)
     except Exception:
         logger.exception("LLM error for user %s", user_id)
         return (
             "Произошла временная ошибка. Попробуй отправить сообщение ещё раз."
         )
 
-    # Save assistant message
-    await db.save_message(session_id, "assistant", response)
+    # Save assistant message with usage
+    await db.save_message(
+        session_id,
+        "assistant",
+        llm_response.content,
+        prompt_tokens=llm_response.prompt_tokens,
+        completion_tokens=llm_response.completion_tokens,
+        cost=llm_response.cost,
+    )
 
-    return response
+    return llm_response.content
 
 
 async def stop_session(user_id: int) -> str:

@@ -88,6 +88,8 @@ async def handle_text(message: types.Message) -> None:
     if session.get_state(user.id) == session.UserState.IDLE:
         await session.restore_state(user.id)
 
+    logger.info("User %s: %s", user.id, message.text)
+
     # Show typing indicator
     await message.bot.send_chat_action(message.chat.id, ChatAction.TYPING)
 
