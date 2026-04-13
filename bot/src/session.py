@@ -1,4 +1,5 @@
 import logging
+from collections.abc import AsyncGenerator
 from enum import Enum
 from uuid import UUID
 
@@ -119,6 +120,73 @@ async def handle_message(user_id: int, text: str) -> str:
     )
 
     return llm_response.content
+
+
+async def handle_message_stream(user_id: int, text: str) -> AsyncGenerator[str, None]:
+    """Process a user message with streaming. Yields accumulated text chunks.
+
+    Raises RuntimeError for non-streaming errors (wrong state, no session).
+    On LLM stream failure, falls back to non-streaming handle_message().
+    """
+    state = get_state(user_id)
+
+    if state == UserState.AWAITING_RATING:
+        yield await _handle_rating(user_id, text)
+        return
+
+    if state != UserState.ACTIVE:
+        yield (
+            "Сейчас нет активной сессии. "
+            "Отправь /start или /new, чтобы начать."
+        )
+        return
+
+    session_id = get_session_id(user_id)
+    if session_id is None:
+        set_state(user_id, UserState.IDLE)
+        yield "Произошла ошибка. Отправь /new, чтобы начать новую сессию."
+        return
+
+    # Save user message
+    await db.save_message(session_id, "user", text)
+
+    # Build conversation history
+    history = await db.get_session_messages(session_id)
+    messages = [{"role": r["role"], "content": r["content"]} for r in history]
+
+    # Stream LLM response
+    stream_state = llm.StreamState()
+    try:
+        async for accumulated_text in llm.chat_stream(messages, state=stream_state):
+            yield accumulated_text
+    except Exception:
+        logger.exception("LLM stream error for user %s, falling back", user_id)
+        # Fallback: non-streaming
+        try:
+            llm_response = await llm.chat(messages)
+        except Exception:
+            logger.exception("LLM fallback error for user %s", user_id)
+            yield "Произошла временная ошибка. Попробуй отправить сообщение ещё раз."
+            return
+
+        await db.save_message(
+            session_id, "assistant", llm_response.content,
+            prompt_tokens=llm_response.prompt_tokens,
+            completion_tokens=llm_response.completion_tokens,
+            cost=llm_response.cost,
+        )
+        yield llm_response.content
+        return
+
+    # Save assistant message with usage from stream
+    if stream_state.response:
+        r = stream_state.response
+        await db.save_message(
+            session_id, "assistant", r.content,
+            prompt_tokens=r.prompt_tokens,
+            completion_tokens=r.completion_tokens,
+            cost=r.cost,
+        )
 
 
 async def stop_session(user_id: int) -> str:

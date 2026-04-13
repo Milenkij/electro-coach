@@ -27,6 +27,12 @@
 - [x] `bot.py` — логирует текст user-сообщений в stdout
 - [x] `main.py` — применяет все миграции из `migrations/` при старте (glob + sort)
 
+## Этап 3.3: Стриминг ответа LLM (Сценарий 6)
+- [x] `requirements.txt` — обновить aiogram 3.15.0 → 3.27.0
+- [x] `llm.py` — метод `chat_stream()`: SSE streaming, async generator, yield accumulated text, парсинг usage из последнего чанка
+- [x] `session.py` — метод `handle_message_stream()`: итерирует `chat_stream()`, yield'ит текст, сохраняет в БД с usage, fallback на `handle_message()`
+- [x] `bot.py` — `handle_text()`: draft_id, итерация `handle_message_stream()`, throttle 300ms `sendMessageDraft()`, финальный `sendMessage()` с HTML, fallback
+
 ## Этап 4: Тестирование
 - [ ] Локальный запуск
 - [ ] Прогон полного сценария сессии

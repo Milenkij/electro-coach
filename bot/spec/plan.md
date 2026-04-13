@@ -46,6 +46,19 @@ Polling mode (не webhook) — проще для MVP, не нужен доме�
 ### Агрегация
 Токены/стоимость по сессии и пользователю — SQL `SUM` по `messages`. Новых колонок/таблиц для агрегатов не создаём.
 
+## Стриминг ответа LLM (Сценарий 6)
+
+### Зависимости
+- `aiogram` 3.15.0 → 3.27.0 (поддержка `sendMessageDraft`)
+
+### Изменения в модулях
+- **`llm.py`** — новый метод `chat_stream()`: запрос с `"stream": true`, async generator yield'ит accumulated text на каждый чанк. Последний чанк содержит `usage` — возвращается как `LLMResponse`. Существующий `chat()` остаётся как fallback.
+- **`session.py`** — новый метод `handle_message_stream()`: вызывает `llm.chat_stream()`, yield'ит accumulated text, после завершения сохраняет в БД с usage. При ошибке — fallback на `handle_message()`.
+- **`bot.py`** — `handle_text()`: генерирует `draft_id`, итерирует `handle_message_stream()`, throttle ~300ms между `sendMessageDraft()`. Финал: `sendMessage()` с HTML. При ошибке — fallback на обычный `message.answer()`.
+
+### Не меняются
+`config.py`, `db.py`, миграции, `main.py`.
+
 ## Контекст LLM
 
 Каждое сообщение пользователя → загрузка всей истории сессии из БД → отправка в LLM с системным промптом. Контекст ограничен одной сессией.

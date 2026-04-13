@@ -1,11 +1,15 @@
 import logging
+import time
 
 from aiogram import Bot, Dispatcher, Router, types
 from aiogram.enums import ChatAction, ChatMemberStatus, ParseMode
 from aiogram.filters import Command
+from aiogram.methods import SendMessageDraft
 
 from . import session
 from .formatting import md_to_tg_html
+
+DRAFT_THROTTLE = 0.3  # seconds between draft updates
 
 logger = logging.getLogger(__name__)
 
@@ -90,8 +94,43 @@ async def handle_text(message: types.Message) -> None:
 
     logger.info("User %s: %s", user.id, message.text)
 
-    # Show typing indicator
-    await message.bot.send_chat_action(message.chat.id, ChatAction.TYPING)
+    bot = message.bot
+    chat_id = message.chat.id
 
-    response = await session.handle_message(user.id, message.text)
-    await message.answer(md_to_tg_html(response), parse_mode=ParseMode.HTML)
+    # Try streaming
+    draft_id = int(time.time() * 1000) % 2147483647
+    last_draft_ts = 0.0
+    final_text = ""
+    streamed = False
+
+    try:
+        async for accumulated_text in session.handle_message_stream(user.id, message.text):
+            final_text = accumulated_text
+            streamed = True
+            now = time.monotonic()
+            if now - last_draft_ts >= DRAFT_THROTTLE:
+                await bot(SendMessageDraft(
+                    chat_id=chat_id,
+                    draft_id=draft_id,
+                    text=accumulated_text,
+                ))
+                last_draft_ts = now
+
+        # Send final draft update + persistent message
+        if streamed:
+            await bot(SendMessageDraft(
+                chat_id=chat_id,
+                draft_id=draft_id,
+                text=final_text,
+            ))
+        await message.answer(
+            md_to_tg_html(final_text),
+            parse_mode=ParseMode.HTML,
+        )
+    except Exception:
+        logger.exception("Streaming failed for user %s, falling back", user.id)
+        response = await session.handle_message(user.id, message.text)
+        await message.answer(
+            md_to_tg_html(response),
+            parse_mode=ParseMode.HTML,
+        )
