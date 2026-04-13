@@ -104,6 +104,13 @@ async def handle_text(message: types.Message) -> None:
     streamed = False
 
     try:
+        # Immediate feedback
+        await bot(SendMessageDraft(
+            chat_id=chat_id,
+            draft_id=draft_id,
+            text="Думаю...",
+        ))
+
         async for accumulated_text in session.handle_message_stream(user.id, message.text):
             final_text = accumulated_text
             streamed = True
