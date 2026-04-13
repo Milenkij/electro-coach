@@ -1,7 +1,7 @@
 import logging
 
 from aiogram import Bot, Dispatcher, Router, types
-from aiogram.enums import ChatAction
+from aiogram.enums import ChatAction, ChatMemberStatus
 from aiogram.filters import Command
 
 from . import session
@@ -58,6 +58,17 @@ async def cmd_stop(message: types.Message) -> None:
 
     response = await session.stop_session(user.id)
     await message.answer(response)
+
+
+@router.my_chat_member()
+async def handle_chat_member(update: types.ChatMemberUpdated) -> None:
+    """Handle block/unblock — just log, prevent update queue from stalling."""
+    status = update.new_chat_member.status
+    user_id = update.from_user.id
+    logger.info("Chat member update: user %s → %s", user_id, status)
+    if status in (ChatMemberStatus.KICKED, ChatMemberStatus.LEFT):
+        # User blocked the bot — clean up in-memory state
+        session.cleanup_user(user_id)
 
 
 @router.message()

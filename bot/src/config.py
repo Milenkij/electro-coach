@@ -14,7 +14,7 @@ class Config:
     telegram_token: str
     openrouter_api_key: str
     database_url: str
-    openrouter_model: str = "anthropic/claude-sonnet-4-20250514"
+    openrouter_model: str = "@preset/electrocoach"
     free_sessions_limit: int = 2
 
     @classmethod
@@ -37,7 +37,7 @@ class Config:
             openrouter_api_key=api_key,
             database_url=database_url,
             openrouter_model=os.environ.get(
-                "OPENROUTER_MODEL", "anthropic/claude-sonnet-4-20250514"
+                "OPENROUTER_MODEL", "@preset/electrocoach"
             ),
         )
 

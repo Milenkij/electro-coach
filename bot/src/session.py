@@ -18,6 +18,12 @@ _user_states: dict[int, UserState] = {}
 _user_sessions: dict[int, UUID] = {}
 
 
+def cleanup_user(user_id: int) -> None:
+    """Remove in-memory state for a user (e.g. after block)."""
+    _user_states.pop(user_id, None)
+    _user_sessions.pop(user_id, None)
+
+
 def get_state(user_id: int) -> UserState:
     return _user_states.get(user_id, UserState.IDLE)
 

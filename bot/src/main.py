@@ -32,7 +32,7 @@ async def main() -> None:
 
     logger.info("Bot is polling...")
     try:
-        await dp.start_polling(bot)
+        await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())
     finally:
         await db.close_pool()
         await bot.session.close()
