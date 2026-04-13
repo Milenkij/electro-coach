@@ -1,0 +1,29 @@
+services:
+  bot:
+    build: .
+    restart: always
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://electrocoach:${POSTGRES_PASSWORD}@db:5432/electrocoach
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres:16-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: electrocoach
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: electrocoach
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./migrations/001_init.sql:/docker-entrypoint-initdb.d/001_init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U electrocoach"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  pgdata:

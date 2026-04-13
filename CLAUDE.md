@@ -57,11 +57,70 @@ AI-коуч в Telegram, заменяющий живого коуча / псих
 - ROI-метрики, стоимость замены сотрудника, утилизация EAP
 - CTA: «Обсудить внедрение» / «Запустить пилот»
 
+## Telegram-бот (MVP)
+
+Код в `bot/`. Методология разработки: [spec-kit](https://github.com/github/spec-kit/) (Spec-Driven Development).
+
+### Стек
+- **Python 3.11+**, aiogram 3, asyncpg, httpx
+- **LLM**: OpenRouter API (модель `anthropic/claude-sonnet-4-20250514`)
+- **БД**: PostgreSQL (на VPS, подключение через asyncpg)
+- **Деплой**: systemd на VPS, polling mode
+
+### Структура bot/
+```
+bot/
+├── AGENTS.md                    — spec-kit: роли агентов (Specify, Plan, Tasks, Implement, Review)
+├── prompt.md                    — системный промпт коуча (GROW + Дилтс) — НЕ МЕНЯТЬ без запроса
+├── requirements.txt             — aiogram, asyncpg, httpx, python-dotenv
+├── .env                         — секреты (Telegram token, OpenRouter key, DATABASE_URL)
+├── .env.example                 — шаблон секретов
+├── spec/                        — spec-kit артефакты
+│   ├── constitution.md          — принципы кода и продукта
+│   ├── spec.md                  — продуктовая спецификация (сценарии, команды, ограничения)
+│   ├── plan.md                  — технический план (архитектура, модули, БД)
+│   └── tasks.md                 — задачи с чеклистом по этапам
+├── migrations/
+│   └── 001_init.sql             — схема БД: users, sessions, messages
+└── src/
+    ├── config.py                — загрузка .env, dataclass Config
+    ├── db.py                    — asyncpg pool, CRUD для users/sessions/messages
+    ├── llm.py                   — OpenRouter chat completions
+    ├── session.py               — FSM сессии (idle → active → awaiting_rating), управление лимитами
+    ├── bot.py                   — aiogram Router: /start, /new, /stop, текстовые сообщения
+    └── main.py                  — точка входа: init DB pool → run migration → start polling
+```
+
+### Секреты (в bot/.env, не в git)
+- `TELEGRAM_BOT_TOKEN` — токен Telegram-бота
+- `OPENROUTER_API_KEY` — ключ OpenRouter
+- `DATABASE_URL` — строка подключения PostgreSQL
+
+### Текущий статус
+- **Код написан полностью**, все модули готовы
+- **Не сделано**: установка зависимостей, деплой на VPS, тестирование
+- Следующий шаг: SSH-доступ к серверу → установка PostgreSQL + Python → деплой → запуск
+
+### Запуск
+```bash
+cd bot
+pip install -r requirements.txt
+python -m src.main
+```
+
+### Принципы (из spec/constitution.md)
+- Async-first для всего I/O
+- Коуч не советчик — только вопросы и отражение
+- Один вопрос за раз в диалоге
+- Атомарные сессии без памяти между ними
+- 2 бесплатные сессии, потом заглушка подписки
+
 ## Что ещё не сделано
 
-- **Telegram-бот** — сам продукт (MVP из PRD.md)
+- **Деплой бота на VPS** — код готов, нужен SSH-доступ
 - **Нейминг** — ElectroCoach рабочее название, финальное не выбрано
 - **Деплой сайтов** — лендинги пока только локальные HTML
 - **Аналитика** — трекинг, UTM, события квиза
 - **Монетизация** — подписка 5–15K/мес для B2C, корпоративный прайсинг для B2B
 - **A/B тесты** — разные варианты квиз-вопросов и порядка сегментов
+- **Платёжная интеграция** — сейчас заглушка после 2 бесплатных сессий
