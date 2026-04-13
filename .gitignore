@@ -17,6 +17,10 @@ env/
 .env
 bot/.env
 
+# Claude Code
+.claude/settings.local.json
+.claude/scheduled_tasks.lock
+
 # IDE
 .idea/
 .vscode/
