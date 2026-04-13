@@ -102,16 +102,21 @@ async def handle_text(message: types.Message) -> None:
     last_draft_ts = 0.0
     final_text = ""
     streamed = False
+    thinking_msg: types.Message | None = None
 
     try:
-        # Immediate feedback
-        await bot(SendMessageDraft(
-            chat_id=chat_id,
-            draft_id=draft_id,
-            text="Думаю...",
-        ))
+        # Immediate feedback — regular message, will be deleted when stream starts
+        thinking_msg = await message.answer("Думаю...")
 
         async for accumulated_text in session.handle_message_stream(user.id, message.text):
+            # Delete "Думаю..." on first chunk
+            if thinking_msg is not None:
+                try:
+                    await thinking_msg.delete()
+                except Exception:
+                    pass
+                thinking_msg = None
+
             final_text = accumulated_text
             streamed = True
             now = time.monotonic()
@@ -122,6 +127,13 @@ async def handle_text(message: types.Message) -> None:
                     text=accumulated_text,
                 ))
                 last_draft_ts = now
+
+        # Clean up thinking message if stream yielded nothing
+        if thinking_msg is not None:
+            try:
+                await thinking_msg.delete()
+            except Exception:
+                pass
 
         # Send final draft update + persistent message
         if streamed:
