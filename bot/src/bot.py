@@ -1,10 +1,11 @@
 import logging
 
 from aiogram import Bot, Dispatcher, Router, types
-from aiogram.enums import ChatAction, ChatMemberStatus
+from aiogram.enums import ChatAction, ChatMemberStatus, ParseMode
 from aiogram.filters import Command
 
 from . import session
+from .formatting import md_to_tg_html
 
 logger = logging.getLogger(__name__)
 
@@ -85,4 +86,4 @@ async def handle_text(message: types.Message) -> None:
     await message.bot.send_chat_action(message.chat.id, ChatAction.TYPING)
 
     response = await session.handle_message(user.id, message.text)
-    await message.answer(response)
+    await message.answer(md_to_tg_html(response), parse_mode=ParseMode.HTML)
