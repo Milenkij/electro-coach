@@ -27,6 +27,9 @@ bot/.env
 *.swp
 *.swo
 
+# Output (generated PDFs)
+naming/output/
+
 # OS
 .DS_Store
 Thumbs.db
