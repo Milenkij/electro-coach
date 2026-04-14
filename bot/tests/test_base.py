@@ -94,11 +94,12 @@ def test_system_prompt_with_time_metadata():
 
 
 def test_system_prompt_no_metadata():
-    """Without session args, no metadata block is appended."""
+    """Without session args, no time-stamped metadata block is appended."""
     from src.llm import _build_system_prompt
 
     prompt = _build_system_prompt()
-    assert "[Метаданные сессии]" not in prompt
+    assert "Начало сессии:" not in prompt
+    assert "Текущее время:" not in prompt
 
 
 # ---------------------------------------------------------------------------
