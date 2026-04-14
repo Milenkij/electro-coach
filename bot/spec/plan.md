@@ -73,7 +73,7 @@ Polling mode (не webhook) — проще для MVP, не нужен доме�
 - **`db.py`** — `set_time_budget(session_id, text)` записывает time_budget. `get_session_meta(session_id)` возвращает `started_at` + `time_budget`.
 - **`llm.py`** — `chat()` и `chat_stream()` принимают `session_started_at: datetime | None`, `time_budget: str | None`. Если переданы — добавляют блок `[Метаданные сессии]` в system prompt.
 - **`session.py`** — `handle_message()` / `handle_message_stream()` загружают meta из сессии и передают в LLM.
-- **`prompt.md`** — инструкции: спросить о времени после прояснения запроса, калибровать глубину, мягко подсвечивать выход за рамки.
+- **`prompts/product-rules.md`** — инструкции: спросить о времени после прояснения запроса, калибровать глубину, мягко подсвечивать выход за рамки.
 
 ## Paywall (Сценарий 8)
 

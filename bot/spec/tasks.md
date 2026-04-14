@@ -38,7 +38,7 @@
 - [ ] `db.py` — `set_time_budget()`, `get_session_meta()`
 - [ ] `llm.py` — передача `session_started_at` и `time_budget` в system prompt
 - [ ] `session.py` — загрузка meta и передача в LLM
-- [ ] `prompt.md` — инструкции по управлению временем
+- [x] `prompts/product-rules.md` — инструкции по управлению временем
 
 ## Этап 3.5: Paywall 72 часа (Сценарий 8)
 - [ ] Миграция `003` — `subscription_until` в `users`, DROP `free_sessions_left`/`is_subscribed`

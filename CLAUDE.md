@@ -94,7 +94,12 @@ AI-коуч в Telegram, заменяющий живого коуча / псих
 ```
 bot/
 ├── AGENTS.md                    — spec-kit: роли агентов (Specify, Plan, Tasks, Implement, Review)
-├── prompt.md                    — системный промпт коуча (GROW + Дилтс) — НЕ МЕНЯТЬ без запроса
+├── prompts/                     — многослойная система промптов коуча
+│   ├── base/                    — always-loaded: идентичность + safety
+│   ├── playbook/                — always-loaded: операционные ходы
+│   ├── cards/                   — conditional: тематические карточки (по keyword match)
+│   ├── product-rules.md         — GROW + Дилтс + тайминг + UX-правила
+│   └── USAGE.md                 — логика загрузки слоёв
 ├── requirements.txt             — aiogram, asyncpg, httpx, python-dotenv
 ├── .env                         — секреты (Telegram token, OpenRouter key, DATABASE_URL)
 ├── .env.example                 — шаблон секретов

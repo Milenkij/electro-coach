@@ -20,23 +20,99 @@ class LLMResponse:
 
 logger = logging.getLogger(__name__)
 
-_PROMPT_PATH = Path(__file__).resolve().parent.parent / "prompt.md"
-_system_prompt: str | None = None
+_PROMPTS_DIR = Path(__file__).resolve().parent.parent / "prompts"
+
+# Always-loaded layers (cached after first read)
+_core_prompt: str | None = None
+
+# Retrieval cards: keyword → filename
+_CARD_KEYWORDS: dict[str, list[str]] = {
+    "goal-pursuit": [
+        "цель", "план", "приоритет", "фокус", "делать", "результат",
+        "достичь", "стратегия", "действие", "обязательство",
+    ],
+    "self-esteem-and-self-trust": [
+        "самооценка", "уверенность", "стыд", "самокритика", "неуверен",
+        "обесценива", "недостаточно", "не заслуживаю", "самоуважение",
+    ],
+    "systems-thinking": [
+        "повторяется", "опять", "цикл", "система", "хаос", "перегруз",
+        "снова оказываюсь", "одно и то же", "петля",
+    ],
+    "self-sabotage-patterns": [
+        "саботаж", "срыв", "снова делаю", "защита", "избегание",
+        "разрушаю", "самосаботаж", "ловушка", "сценарий",
+    ],
+    "adhd-like-patterns": [
+        "внимание", "прокрастинация", "запуск", "забываю", "хаос",
+        "не могу начать", "отвлекаюсь", "время", "импульс", "гиперфокус",
+    ],
+}
+_MAX_CARDS = 2  # load at most 2 cards per request
+
+# Card content cache
+_card_cache: dict[str, str] = {}
 
 
-def _load_system_prompt() -> str:
-    global _system_prompt
-    if _system_prompt is None:
-        _system_prompt = _PROMPT_PATH.read_text(encoding="utf-8")
-    return _system_prompt
+def _load_core_prompt() -> str:
+    """Load and cache the always-loaded prompt layers."""
+    global _core_prompt
+    if _core_prompt is None:
+        layers = [
+            _PROMPTS_DIR / "base" / "base-identity.md",
+            _PROMPTS_DIR / "base" / "safety-and-boundaries.md",
+            _PROMPTS_DIR / "playbook" / "coach-playbook.md",
+            _PROMPTS_DIR / "product-rules.md",
+        ]
+        parts = []
+        for path in layers:
+            parts.append(path.read_text(encoding="utf-8"))
+        _core_prompt = "\n\n---\n\n".join(parts)
+    return _core_prompt
+
+
+def _load_card(name: str) -> str:
+    """Load and cache a retrieval card by name."""
+    if name not in _card_cache:
+        path = _PROMPTS_DIR / "cards" / f"{name}.md"
+        _card_cache[name] = path.read_text(encoding="utf-8")
+    return _card_cache[name]
+
+
+def _select_cards(messages: list[dict[str, str]]) -> list[str]:
+    """Select relevant retrieval cards based on conversation keywords."""
+    # Combine all user messages into searchable text
+    text = " ".join(
+        m["content"].lower() for m in messages if m["role"] == "user"
+    )
+
+    scores: dict[str, int] = {}
+    for card_name, keywords in _CARD_KEYWORDS.items():
+        score = sum(1 for kw in keywords if kw in text)
+        if score > 0:
+            scores[card_name] = score
+
+    # Return top N cards by score
+    ranked = sorted(scores, key=scores.get, reverse=True)
+    return ranked[:_MAX_CARDS]
 
 
 def _build_system_prompt(
+    messages: list[dict[str, str]] | None = None,
     session_started_at: datetime | None = None,
     time_budget: str | None = None,
 ) -> str:
-    """Build system prompt with optional session time metadata."""
-    prompt = _load_system_prompt()
+    """Build system prompt from layers + conditional cards + session metadata."""
+    prompt = _load_core_prompt()
+
+    # Add relevant retrieval cards
+    if messages:
+        cards = _select_cards(messages)
+        for card_name in cards:
+            prompt += "\n\n---\n\n" + _load_card(card_name)
+            logger.debug("Loaded card: %s", card_name)
+
+    # Add session time metadata
     if session_started_at is not None:
         now = datetime.now(timezone.utc)
         meta = (
@@ -49,6 +125,7 @@ def _build_system_prompt(
         else:
             meta += "Заявленное время пользователя: ещё не указано\n"
         prompt += meta
+
     return prompt
 
 
@@ -58,7 +135,7 @@ async def chat(
     time_budget: str | None = None,
 ) -> LLMResponse:
     """Send messages to OpenRouter and return assistant response with usage."""
-    system_prompt = _build_system_prompt(session_started_at, time_budget)
+    system_prompt = _build_system_prompt(messages, session_started_at, time_budget)
 
     payload = {
         "model": config.openrouter_model,
@@ -118,7 +195,7 @@ async def chat_stream(
     After iteration completes, state.response contains the final LLMResponse
     with content and usage data.
     """
-    system_prompt = _build_system_prompt(session_started_at, time_budget)
+    system_prompt = _build_system_prompt(messages, session_started_at, time_budget)
 
     payload = {
         "model": config.openrouter_model,

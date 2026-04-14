@@ -59,12 +59,13 @@ def _make_session_record(**overrides):
 
 
 def test_system_prompt_loads():
-    """prompt.md exists and is non-empty."""
-    from src.llm import _load_system_prompt
+    """Core prompt layers load and contain key content."""
+    from src.llm import _load_core_prompt
 
-    prompt = _load_system_prompt()
-    assert len(prompt) > 100
+    prompt = _load_core_prompt()
+    assert len(prompt) > 500
     assert "GROW" in prompt
+    assert "Safety" in prompt or "Boundary" in prompt or "safety" in prompt
 
 
 # ---------------------------------------------------------------------------
@@ -77,7 +78,11 @@ def test_system_prompt_with_time_metadata():
     from src.llm import _build_system_prompt
 
     started = datetime(2026, 4, 14, 12, 0, tzinfo=timezone.utc)
-    prompt = _build_system_prompt(session_started_at=started, time_budget="30 минут")
+    prompt = _build_system_prompt(
+        messages=[{"role": "user", "content": "тест"}],
+        session_started_at=started,
+        time_budget="30 минут",
+    )
     assert "[Метаданные сессии]" in prompt
     assert "30 минут" in prompt
     assert "2026-04-14 12:00 UTC" in prompt
