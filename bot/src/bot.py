@@ -6,7 +6,7 @@ from aiogram.enums import ChatAction, ChatMemberStatus, ParseMode
 from aiogram.filters import Command
 from aiogram.methods import SendMessageDraft
 
-from . import session
+from . import db, session
 from .formatting import md_to_tg_html
 
 DRAFT_THROTTLE = 0.3  # seconds between draft updates
@@ -16,11 +16,27 @@ logger = logging.getLogger(__name__)
 router = Router()
 
 
+async def _check_subscription(message: types.Message) -> bool:
+    """Check subscription and send paywall CTA if expired. Returns True if active."""
+    user = message.from_user
+    if user is None:
+        return False
+    # Ensure user exists in DB
+    await db.get_or_create_user(user.id, user.username, user.first_name or "User")
+    if not await db.is_subscription_active(user.id):
+        await message.answer(session.PAYWALL_MESSAGE)
+        return False
+    return True
+
+
 @router.message(Command("start"))
 async def cmd_start(message: types.Message) -> None:
     user = message.from_user
     if user is None:
         return
+
+    # Register user (always, even if subscription expired)
+    await db.get_or_create_user(user.id, user.username, user.first_name or "User")
 
     await message.answer(
         "Привет! Я — AI-коуч. Помогаю разобраться с тем, что мешает двигаться вперёд, "
@@ -35,6 +51,11 @@ async def cmd_start(message: types.Message) -> None:
     # Restore state from DB (e.g. after restart)
     await session.restore_state(user.id)
 
+    # Check subscription before auto-starting
+    if not await db.is_subscription_active(user.id):
+        await message.answer(session.PAYWALL_MESSAGE)
+        return
+
     # Auto-start first session if idle
     if session.get_state(user.id) == session.UserState.IDLE:
         response = await session.start_session(
@@ -45,10 +66,10 @@ async def cmd_start(message: types.Message) -> None:
 
 @router.message(Command("new"))
 async def cmd_new(message: types.Message) -> None:
-    user = message.from_user
-    if user is None:
+    if not await _check_subscription(message):
         return
 
+    user = message.from_user
     response = await session.start_session(
         user.id, user.username, user.first_name or "User"
     )
@@ -57,10 +78,10 @@ async def cmd_new(message: types.Message) -> None:
 
 @router.message(Command("stop"))
 async def cmd_stop(message: types.Message) -> None:
-    user = message.from_user
-    if user is None:
+    if not await _check_subscription(message):
         return
 
+    user = message.from_user
     response = await session.stop_session(user.id)
     await message.answer(response)
 
@@ -78,9 +99,10 @@ async def handle_chat_member(update: types.ChatMemberUpdated) -> None:
 
 @router.message()
 async def handle_text(message: types.Message) -> None:
-    user = message.from_user
-    if user is None:
+    if not await _check_subscription(message):
         return
+
+    user = message.from_user
 
     if not message.text:
         await message.answer(

@@ -33,6 +33,23 @@
 - [x] `session.py` — метод `handle_message_stream()`: итерирует `chat_stream()`, yield'ит текст, сохраняет в БД с usage, fallback на `handle_message()`
 - [x] `bot.py` — `handle_text()`: draft_id, итерация `handle_message_stream()`, throttle 300ms `sendMessageDraft()`, финальный `sendMessage()` с HTML, fallback
 
+## Этап 3.4: Тайминг сессии (Сценарий 7)
+- [ ] Миграция `003_time_budget_and_subscription.sql` — `time_budget TEXT` в `sessions`
+- [ ] `db.py` — `set_time_budget()`, `get_session_meta()`
+- [ ] `llm.py` — передача `session_started_at` и `time_budget` в system prompt
+- [ ] `session.py` — загрузка meta и передача в LLM
+- [ ] `prompt.md` — инструкции по управлению временем
+
+## Этап 3.5: Paywall 72 часа (Сценарий 8)
+- [ ] Миграция `003` — `subscription_until` в `users`, DROP `free_sessions_left`/`is_subscribed`
+- [ ] `db.py` — `is_subscription_active()`, удалить `decrement_free_sessions()`
+- [ ] `session.py` — проверка подписки в `start_session()`, убрать `decrement_free_sessions` из `_handle_rating()`
+- [ ] `bot.py` — проверка подписки перед любым хэндлером, CTA на `@shapovalov_vsegda`
+
+## Этап 3.6: Версионирование + тесты
+- [ ] `bot/VERSION` — semver, начало с `0.3.0`
+- [ ] `bot/tests/test_base.py` — 10 базовых тестов
+
 ## Этап 4: Тестирование
 - [ ] Локальный запуск
 - [ ] Прогон полного сценария сессии
@@ -40,5 +57,5 @@
 ## Этап 5: Деплой
 - [ ] PostgreSQL на VPS
 - [ ] Код на VPS
-- [ ] systemd service
+- [ ] Docker Compose
 - [ ] Боевой тест

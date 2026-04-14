@@ -57,6 +57,19 @@ async def get_or_create_user(
         return row
 
 
+async def is_subscription_active(user_id: int) -> bool:
+    """Check if user's subscription (or trial) is still active."""
+    pool = _get_pool()
+    async with pool.acquire() as conn:
+        row = await conn.fetchrow(
+            "SELECT subscription_until > NOW() AS active FROM users WHERE id = $1",
+            user_id,
+        )
+        if row is None:
+            return False
+        return row["active"]
+
+
 async def get_active_session(user_id: int) -> asyncpg.Record | None:
     pool = _get_pool()
     async with pool.acquire() as conn:
@@ -143,14 +156,22 @@ async def get_session_messages(session_id: UUID) -> list[asyncpg.Record]:
         )
 
 
-async def decrement_free_sessions(user_id: int) -> None:
+async def set_time_budget(session_id: UUID, time_budget: str) -> None:
+    """Save user's stated time budget for the session."""
     pool = _get_pool()
     async with pool.acquire() as conn:
         await conn.execute(
-            """
-            UPDATE users
-            SET free_sessions_left = free_sessions_left - 1
-            WHERE id = $1 AND free_sessions_left > 0
-            """,
-            user_id,
+            "UPDATE sessions SET time_budget = $1 WHERE id = $2",
+            time_budget,
+            session_id,
+        )
+
+
+async def get_session_meta(session_id: UUID) -> asyncpg.Record | None:
+    """Get session metadata for LLM context (started_at, time_budget)."""
+    pool = _get_pool()
+    async with pool.acquire() as conn:
+        return await conn.fetchrow(
+            "SELECT started_at, time_budget FROM sessions WHERE id = $1",
+            session_id,
         )

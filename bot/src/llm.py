@@ -2,6 +2,7 @@ import json
 import logging
 from collections.abc import AsyncGenerator
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from decimal import Decimal
 from pathlib import Path
 
@@ -30,9 +31,34 @@ def _load_system_prompt() -> str:
     return _system_prompt
 
 
-async def chat(messages: list[dict[str, str]]) -> LLMResponse:
+def _build_system_prompt(
+    session_started_at: datetime | None = None,
+    time_budget: str | None = None,
+) -> str:
+    """Build system prompt with optional session time metadata."""
+    prompt = _load_system_prompt()
+    if session_started_at is not None:
+        now = datetime.now(timezone.utc)
+        meta = (
+            "\n\n[Метаданные сессии]\n"
+            f"Начало сессии: {session_started_at.strftime('%Y-%m-%d %H:%M UTC')}\n"
+            f"Текущее время: {now.strftime('%Y-%m-%d %H:%M UTC')}\n"
+        )
+        if time_budget:
+            meta += f"Заявленное время пользователя: {time_budget}\n"
+        else:
+            meta += "Заявленное время пользователя: ещё не указано\n"
+        prompt += meta
+    return prompt
+
+
+async def chat(
+    messages: list[dict[str, str]],
+    session_started_at: datetime | None = None,
+    time_budget: str | None = None,
+) -> LLMResponse:
     """Send messages to OpenRouter and return assistant response with usage."""
-    system_prompt = _load_system_prompt()
+    system_prompt = _build_system_prompt(session_started_at, time_budget)
 
     payload = {
         "model": config.openrouter_model,
@@ -84,13 +110,15 @@ class StreamState:
 async def chat_stream(
     messages: list[dict[str, str]],
     state: StreamState | None = None,
+    session_started_at: datetime | None = None,
+    time_budget: str | None = None,
 ) -> AsyncGenerator[str, None]:
     """Stream LLM response via SSE. Yields accumulated text on each chunk.
 
     After iteration completes, state.response contains the final LLMResponse
     with content and usage data.
     """
-    system_prompt = _load_system_prompt()
+    system_prompt = _build_system_prompt(session_started_at, time_budget)
 
     payload = {
         "model": config.openrouter_model,

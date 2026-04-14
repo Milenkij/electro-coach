@@ -63,6 +63,37 @@ Polling mode (не webhook) — проще для MVP, не нужен доме�
 
 Каждое сообщение пользователя → загрузка всей истории сессии из БД → отправка в LLM с системным промптом. Контекст ограничен одной сессией.
 
+## Тайминг сессии (Сценарий 7)
+
+### Миграция
+`migrations/003_time_budget_and_subscription.sql` — добавить в `sessions`:
+- `time_budget TEXT` — сырой ответ пользователя о времени (nullable)
+
+### Изменения в модулях
+- **`db.py`** — `set_time_budget(session_id, text)` записывает time_budget. `get_session_meta(session_id)` возвращает `started_at` + `time_budget`.
+- **`llm.py`** — `chat()` и `chat_stream()` принимают `session_started_at: datetime | None`, `time_budget: str | None`. Если переданы — добавляют блок `[Метаданные сессии]` в system prompt.
+- **`session.py`** — `handle_message()` / `handle_message_stream()` загружают meta из сессии и передают в LLM.
+- **`prompt.md`** — инструкции: спросить о времени после прояснения запроса, калибровать глубину, мягко подсвечивать выход за рамки.
+
+## Paywall (Сценарий 8)
+
+### Миграция (в том же файле 003)
+- `users`: `ADD COLUMN subscription_until TIMESTAMPTZ NOT NULL DEFAULT NOW() + INTERVAL '72 hours'`
+- `users`: `DROP COLUMN free_sessions_left`, `DROP COLUMN is_subscribed`
+
+### Изменения в модулях
+- **`db.py`** — `is_subscription_active(user_id) -> bool`. Удалить `decrement_free_sessions()`.
+- **`session.py`** — `start_session()` проверяет подписку через `is_subscription_active()`. Убрать `decrement_free_sessions()` из `_handle_rating()`.
+- **`bot.py`** — перед обработкой любого сообщения проверяет подписку. Если истекла — CTA на `@shapovalov_vsegda`. Исключение: `/start` регистрирует нового пользователя.
+
+## Версионирование
+
+Файл `bot/VERSION` — semver (major.minor.patch). Начальная версия: `0.3.0`.
+
+## Тесты
+
+`bot/tests/test_base.py` — 10 базовых тестов (pytest + unittest.mock), запускаются после каждого инкремента.
+
 ## Деплой
 
-systemd service с автозапуском. PostgreSQL на том же VPS.
+Docker Compose на VPS с автозапуском. PostgreSQL в отдельном контейнере. CI/CD через GitHub Actions.

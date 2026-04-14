@@ -15,7 +15,6 @@ class Config:
     openrouter_api_key: str
     database_url: str
     openrouter_model: str = "@preset/electrocoach"
-    free_sessions_limit: int = 2
 
     @classmethod
     def from_env(cls) -> "Config":

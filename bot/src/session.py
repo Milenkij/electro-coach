@@ -45,9 +45,16 @@ async def restore_state(user_id: int) -> None:
         _user_sessions[user_id] = active["id"]
 
 
+PAYWALL_MESSAGE = (
+    "Твой пробный период закончился.\n\n"
+    "Чтобы продолжить работу с коучем, "
+    "напиши @shapovalov_vsegda — обсудим подписку."
+)
+
+
 async def start_session(user_id: int, username: str | None, first_name: str) -> str:
     """Try to start a new coaching session. Returns response text."""
-    user = await db.get_or_create_user(user_id, username, first_name)
+    await db.get_or_create_user(user_id, username, first_name)
 
     # Check if already in a session
     if get_state(user_id) == UserState.ACTIVE:
@@ -56,13 +63,9 @@ async def start_session(user_id: int, username: str | None, first_name: str) -> 
             "Продолжай диалог или заверши её командой /stop."
         )
 
-    # Check free sessions limit
-    if not user["is_subscribed"] and user["free_sessions_left"] <= 0:
-        return (
-            "Твои бесплатные сессии закончились.\n\n"
-            "Чтобы продолжить работу с коучем, "
-            "напиши нам для оформления подписки: @electrocoach_support"
-        )
+    # Check subscription
+    if not await db.is_subscription_active(user_id):
+        return PAYWALL_MESSAGE
 
     # Create session
     session = await db.create_session(user_id)
@@ -100,9 +103,18 @@ async def handle_message(user_id: int, text: str) -> str:
     history = await db.get_session_messages(session_id)
     messages = [{"role": r["role"], "content": r["content"]} for r in history]
 
+    # Load session time metadata
+    meta = await db.get_session_meta(session_id)
+    started_at = meta["started_at"] if meta else None
+    time_budget = meta["time_budget"] if meta else None
+
     # Get LLM response
     try:
-        llm_response = await llm.chat(messages)
+        llm_response = await llm.chat(
+            messages,
+            session_started_at=started_at,
+            time_budget=time_budget,
+        )
     except Exception:
         logger.exception("LLM error for user %s", user_id)
         return (
@@ -154,16 +166,30 @@ async def handle_message_stream(user_id: int, text: str) -> AsyncGenerator[str, 
     history = await db.get_session_messages(session_id)
     messages = [{"role": r["role"], "content": r["content"]} for r in history]
 
+    # Load session time metadata
+    meta = await db.get_session_meta(session_id)
+    started_at = meta["started_at"] if meta else None
+    time_budget = meta["time_budget"] if meta else None
+
     # Stream LLM response
     stream_state = llm.StreamState()
     try:
-        async for accumulated_text in llm.chat_stream(messages, state=stream_state):
+        async for accumulated_text in llm.chat_stream(
+            messages,
+            state=stream_state,
+            session_started_at=started_at,
+            time_budget=time_budget,
+        ):
             yield accumulated_text
     except Exception:
         logger.exception("LLM stream error for user %s, falling back", user_id)
         # Fallback: non-streaming
         try:
-            llm_response = await llm.chat(messages)
+            llm_response = await llm.chat(
+                messages,
+                session_started_at=started_at,
+                time_budget=time_budget,
+            )
         except Exception:
             logger.exception("LLM fallback error for user %s", user_id)
             yield "Произошла временная ошибка. Попробуй отправить сообщение ещё раз."
@@ -229,7 +255,6 @@ async def _handle_rating(user_id: int, text: str) -> str:
     session_id = get_session_id(user_id)
     if session_id:
         await db.rate_session(session_id, rating)
-        await db.decrement_free_sessions(user_id)
 
     # Clean up state
     set_state(user_id, UserState.IDLE)
