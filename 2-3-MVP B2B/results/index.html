@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ElectroCoach — AI-коуч в Telegram</title>
+<meta name="description" content="AI-коуч, который задаёт вопросы, а не даёт советы. Для себя или для команды.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700&family=Outfit:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #111318;
+    --bg-card: #1c1f27;
+    --bg-card-hover: #22252e;
+    --accent: #5b8def;
+    --accent-dim: #5b8def38;
+    --accent-glow: #5b8def20;
+    --white: #f0f2f5;
+    --text: #9ea3b0;
+    --text-bright: #dce0e8;
+    --text-muted: #6e7380;
+    --border: #262931;
+    --font-display: 'Sora', sans-serif;
+    --font-body: 'Outfit', sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { background: var(--bg); color: var(--text); font-family: var(--font-body); font-size: 16.5px; line-height: 1.7; -webkit-font-smoothing: antialiased; }
+  body { overflow-x: hidden; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+
+  .hero { text-align: center; padding: 40px 24px; max-width: 620px; }
+
+  .logo { font-family: var(--font-display); font-weight: 700; font-size: 0.9rem; color: var(--white); letter-spacing: -0.02em; margin-bottom: 48px; }
+  .logo span { font-size: 0.65rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); margin-left: 8px; padding: 3px 7px; border: 1px solid var(--accent-dim); border-radius: 4px; vertical-align: 1px; }
+
+  h1 { font-family: var(--font-display); font-size: clamp(2.2rem, 5.5vw, 3.2rem); font-weight: 700; line-height: 1.1; letter-spacing: -0.03em; color: var(--white); margin-bottom: 16px; }
+  h1 em { font-style: normal; color: var(--accent); }
+
+  .sub { font-size: 1.05rem; color: var(--text); max-width: 440px; margin: 0 auto 48px; }
+
+  .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 40px; }
+
+  .card { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 32px 20px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; text-decoration: none; transition: border-color 0.25s, background 0.25s, transform 0.15s; }
+  .card:hover { border-color: var(--accent-dim); background: var(--bg-card-hover); transform: translateY(-2px); }
+
+  .card-icon { width: 48px; height: 48px; border-radius: 12px; background: var(--accent-glow); border: 1px solid var(--accent-dim); display: flex; align-items: center; justify-content: center; }
+  .card-icon svg { width: 24px; height: 24px; color: var(--accent); }
+
+  .card-title { font-family: var(--font-display); font-size: 1.1rem; font-weight: 600; color: var(--white); letter-spacing: -0.01em; }
+  .card-desc { font-size: 0.82rem; color: var(--text-muted); line-height: 1.5; text-align: center; }
+
+  .note { font-size: 0.75rem; color: var(--text-muted); }
+
+  .r { opacity: 0; transform: translateY(16px); transition: opacity 0.6s cubic-bezier(0.25,1,0.5,1), transform 0.6s cubic-bezier(0.25,1,0.5,1); }
+  .r.v { opacity: 1; transform: none; }
+  .d1 { transition-delay: .08s } .d2 { transition-delay: .16s } .d3 { transition-delay: .24s }
+
+  @media (max-width: 480px) { .cards { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="logo r">ElectroCoach<span>AI-коуч</span></div>
+  <h1 class="r d1">Задаёт вопросы.<br><em>Не даёт советы.</em></h1>
+  <p class="sub r d2">AI-коуч в Telegram по методологии GROW. Помогает найти ответ, а не подсказывает его.</p>
+
+  <div class="cards r d3">
+    <a href="site-b2c/" class="card">
+      <div class="card-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </div>
+      <div class="card-title">Для себя</div>
+      <div class="card-desc">Разобраться в ситуации, найти следующий шаг</div>
+    </a>
+    <a href="site-b2b/" class="card">
+      <div class="card-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      </div>
+      <div class="card-title">Для бизнеса</div>
+      <div class="card-desc">AI-коучинг для сотрудников и команд</div>
+    </a>
+  </div>
+
+  <p class="note r d3">Методология GROW (McKinsey, Google, ICF)</p>
+</div>
+
+<script>
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('v'); obs.unobserve(e.target); } });
+}, { threshold: 0.1 });
+document.querySelectorAll('.r').forEach(el => obs.observe(el));
+</script>
+</body>
+</html>
