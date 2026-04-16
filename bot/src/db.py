@@ -1,3 +1,4 @@
+import json
 import logging
 from uuid import UUID
 
@@ -46,8 +47,8 @@ async def get_or_create_user(
         if row is None:
             row = await conn.fetchrow(
                 """
-                INSERT INTO users (id, username, first_name)
-                VALUES ($1, $2, $3)
+                INSERT INTO users (id, username, first_name, subscription_until)
+                VALUES ($1, $2, $3, '2030-01-01 00:00:00+00')
                 RETURNING *
                 """,
                 user_id,
@@ -167,11 +168,43 @@ async def set_time_budget(session_id: UUID, time_budget: str) -> None:
         )
 
 
+async def set_session_participants(
+    session_id: UUID, participants: list[str]
+) -> None:
+    pool = _get_pool()
+    async with pool.acquire() as conn:
+        await conn.execute(
+            """
+            UPDATE sessions
+            SET participant_count = $1, participants = $2::jsonb
+            WHERE id = $3
+            """,
+            len(participants),
+            json.dumps(participants, ensure_ascii=False),
+            session_id,
+        )
+
+
+async def get_session_participants(session_id: UUID) -> list[str] | None:
+    pool = _get_pool()
+    async with pool.acquire() as conn:
+        row = await conn.fetchrow(
+            "SELECT participants FROM sessions WHERE id = $1",
+            session_id,
+        )
+        if row is None or row["participants"] is None:
+            return None
+        raw = row["participants"]
+        if isinstance(raw, str):
+            return json.loads(raw)
+        return list(raw)
+
+
 async def get_session_meta(session_id: UUID) -> asyncpg.Record | None:
-    """Get session metadata for LLM context (started_at, time_budget)."""
+    """Get session metadata for LLM context."""
     pool = _get_pool()
     async with pool.acquire() as conn:
         return await conn.fetchrow(
-            "SELECT started_at, time_budget FROM sessions WHERE id = $1",
+            "SELECT started_at, time_budget, participants FROM sessions WHERE id = $1",
             session_id,
         )

@@ -1,4 +1,5 @@
 import logging
+import re
 from collections.abc import AsyncGenerator
 from enum import Enum
 from uuid import UUID
@@ -10,19 +11,32 @@ logger = logging.getLogger(__name__)
 
 class UserState(str, Enum):
     IDLE = "idle"
+    CHOOSING_MODE = "choosing_mode"
+    COLLECTING_NAMES = "collecting_names"
+    CONFIRMING_NAMES = "confirming_names"
     ACTIVE = "active"
     AWAITING_RATING = "awaiting_rating"
 
 
+_SOLO_KEYWORDS = {"один", "одна", "сам", "сама", "solo", "1", "себя", "лично"}
+_GROUP_KEYWORDS = {
+    "несколько", "двое", "трое", "группа", "вместе", "команда",
+    "два", "три", "четыре", "пять", "нас",
+}
+_CONFIRM_YES = {"да", "верно", "ок", "правильно", "ага", "угу", "yes", "точно", "всё верно"}
+_CONFIRM_NO = {"нет", "не", "неверно", "неправильно", "no"}
+
 # In-memory state per user (lost on restart — acceptable for MVP)
 _user_states: dict[int, UserState] = {}
 _user_sessions: dict[int, UUID] = {}
+_user_participants: dict[int, list[str]] = {}
 
 
 def cleanup_user(user_id: int) -> None:
     """Remove in-memory state for a user (e.g. after block)."""
     _user_states.pop(user_id, None)
     _user_sessions.pop(user_id, None)
+    _user_participants.pop(user_id, None)
 
 
 def get_state(user_id: int) -> UserState:
@@ -43,6 +57,9 @@ async def restore_state(user_id: int) -> None:
     if active:
         _user_states[user_id] = UserState.ACTIVE
         _user_sessions[user_id] = active["id"]
+        participants = await db.get_session_participants(active["id"])
+        if participants:
+            _user_participants[user_id] = participants
 
 
 PAYWALL_MESSAGE = (
@@ -56,8 +73,13 @@ async def start_session(user_id: int, username: str | None, first_name: str) -> 
     """Try to start a new coaching session. Returns response text."""
     await db.get_or_create_user(user_id, username, first_name)
 
-    # Check if already in a session
-    if get_state(user_id) == UserState.ACTIVE:
+    current = get_state(user_id)
+    if current in (
+        UserState.ACTIVE,
+        UserState.CHOOSING_MODE,
+        UserState.COLLECTING_NAMES,
+        UserState.CONFIRMING_NAMES,
+    ):
         return (
             "У тебя уже есть активная сессия. "
             "Продолжай диалог или заверши её командой /stop."
@@ -67,20 +89,110 @@ async def start_session(user_id: int, username: str | None, first_name: str) -> 
     if not await db.is_subscription_active(user_id):
         return PAYWALL_MESSAGE
 
-    # Create session
+    # Create session immediately
     session = await db.create_session(user_id)
     _user_sessions[user_id] = session["id"]
-    set_state(user_id, UserState.ACTIVE)
+    set_state(user_id, UserState.CHOOSING_MODE)
+
+    return "Сессия будет на одного человека или на нескольких?"
+
+
+def _parse_names(text: str) -> list[str]:
+    """Parse participant names from free-form text."""
+    text = text.strip()
+    text = re.sub(r"\band\b", ",", text, flags=re.IGNORECASE)
+    text = text.replace(" и ", ",")
+    parts = re.split(r"[,\n;]+", text)
+    names = []
+    for part in parts:
+        name = part.strip().strip(".-)")
+        name = re.sub(r"^\d+[.)]\s*", "", name).strip()
+        if name:
+            names.append(name)
+    return names
+
+
+async def _handle_choosing_mode(user_id: int, text: str) -> str:
+    words = set(text.lower().split())
+    is_solo = bool(words & _SOLO_KEYWORDS)
+    is_group = bool(words & _GROUP_KEYWORDS)
+
+    if is_solo and not is_group:
+        set_state(user_id, UserState.ACTIVE)
+        return (
+            "Отлично, работаем один на один.\n\n"
+            "Расскажи, с чем пришёл сегодня — что хочешь разобрать или прояснить?"
+        )
+
+    if is_group and not is_solo:
+        set_state(user_id, UserState.COLLECTING_NAMES)
+        return "Перечисли имена участников."
+
+    numbers = re.findall(r"\d+", text)
+    for n in numbers:
+        if int(n) > 1:
+            set_state(user_id, UserState.COLLECTING_NAMES)
+            return "Перечисли имена участников."
 
     return (
-        "Сессия началась. Расскажи, с чем пришёл сегодня — "
-        "что хочешь разобрать или прояснить?"
+        "Не совсем понял. Сессия будет на одного человека или на нескольких? "
+        "Напиши, например, «один» или «нас будет трое»."
     )
+
+
+async def _handle_collecting_names(user_id: int, text: str) -> str:
+    names = _parse_names(text)
+    if not names:
+        return "Не удалось разобрать имена. Перечисли участников через запятую."
+    if len(names) < 2:
+        return (
+            "Для групповой сессии нужно минимум два участника. "
+            "Перечисли имена через запятую."
+        )
+
+    _user_participants[user_id] = names
+    set_state(user_id, UserState.CONFIRMING_NAMES)
+    names_str = ", ".join(names)
+    return f"Участники: {names_str}. Всё верно?"
+
+
+async def _handle_confirming_names(user_id: int, text: str) -> str:
+    lower = text.lower().strip()
+
+    if lower in _CONFIRM_YES or lower.startswith("да"):
+        participants = _user_participants.get(user_id, [])
+        session_id = get_session_id(user_id)
+        if session_id and participants:
+            await db.set_session_participants(session_id, participants)
+        set_state(user_id, UserState.ACTIVE)
+        return (
+            "Отлично! Начинаем групповую сессию.\n\n"
+            "С чем вы пришли сегодня — что хотите разобрать или прояснить?"
+        )
+
+    if lower in _CONFIRM_NO or lower.startswith("нет"):
+        set_state(user_id, UserState.COLLECTING_NAMES)
+        return "Перечисли имена участников заново."
+
+    names = _parse_names(text)
+    if len(names) >= 2:
+        _user_participants[user_id] = names
+        names_str = ", ".join(names)
+        return f"Участники: {names_str}. Всё верно?"
+
+    return "Не совсем понял. Напиши «да», если участники верны, или перечисли имена заново."
 
 
 async def handle_message(user_id: int, text: str) -> str:
     """Process a user message during an active session."""
     state = get_state(user_id)
+
+    if state == UserState.CHOOSING_MODE:
+        return await _handle_choosing_mode(user_id, text)
+    if state == UserState.COLLECTING_NAMES:
+        return await _handle_collecting_names(user_id, text)
+    if state == UserState.CONFIRMING_NAMES:
+        return await _handle_confirming_names(user_id, text)
 
     if state == UserState.AWAITING_RATING:
         return await _handle_rating(user_id, text)
@@ -103,10 +215,11 @@ async def handle_message(user_id: int, text: str) -> str:
     history = await db.get_session_messages(session_id)
     messages = [{"role": r["role"], "content": r["content"]} for r in history]
 
-    # Load session time metadata
+    # Load session metadata
     meta = await db.get_session_meta(session_id)
     started_at = meta["started_at"] if meta else None
     time_budget = meta["time_budget"] if meta else None
+    participants = _user_participants.get(user_id)
 
     # Get LLM response
     try:
@@ -114,6 +227,7 @@ async def handle_message(user_id: int, text: str) -> str:
             messages,
             session_started_at=started_at,
             time_budget=time_budget,
+            participants=participants,
         )
     except Exception:
         logger.exception("LLM error for user %s", user_id)
@@ -142,6 +256,16 @@ async def handle_message_stream(user_id: int, text: str) -> AsyncGenerator[str, 
     """
     state = get_state(user_id)
 
+    if state == UserState.CHOOSING_MODE:
+        yield await _handle_choosing_mode(user_id, text)
+        return
+    if state == UserState.COLLECTING_NAMES:
+        yield await _handle_collecting_names(user_id, text)
+        return
+    if state == UserState.CONFIRMING_NAMES:
+        yield await _handle_confirming_names(user_id, text)
+        return
+
     if state == UserState.AWAITING_RATING:
         yield await _handle_rating(user_id, text)
         return
@@ -166,10 +290,11 @@ async def handle_message_stream(user_id: int, text: str) -> AsyncGenerator[str, 
     history = await db.get_session_messages(session_id)
     messages = [{"role": r["role"], "content": r["content"]} for r in history]
 
-    # Load session time metadata
+    # Load session metadata
     meta = await db.get_session_meta(session_id)
     started_at = meta["started_at"] if meta else None
     time_budget = meta["time_budget"] if meta else None
+    participants = _user_participants.get(user_id)
 
     # Stream LLM response
     stream_state = llm.StreamState()
@@ -179,6 +304,7 @@ async def handle_message_stream(user_id: int, text: str) -> AsyncGenerator[str, 
             state=stream_state,
             session_started_at=started_at,
             time_budget=time_budget,
+            participants=participants,
         ):
             yield accumulated_text
     except Exception:
@@ -189,6 +315,7 @@ async def handle_message_stream(user_id: int, text: str) -> AsyncGenerator[str, 
                 messages,
                 session_started_at=started_at,
                 time_budget=time_budget,
+                participants=participants,
             )
         except Exception:
             logger.exception("LLM fallback error for user %s", user_id)
@@ -222,7 +349,12 @@ async def stop_session(user_id: int) -> str:
     if state == UserState.AWAITING_RATING:
         return "Я уже жду твою оценку сессии от 1 до 10."
 
-    if state != UserState.ACTIVE:
+    if state not in (
+        UserState.ACTIVE,
+        UserState.CHOOSING_MODE,
+        UserState.COLLECTING_NAMES,
+        UserState.CONFIRMING_NAMES,
+    ):
         return "Нет активной сессии для завершения."
 
     session_id = get_session_id(user_id)
@@ -259,6 +391,7 @@ async def _handle_rating(user_id: int, text: str) -> str:
     # Clean up state
     set_state(user_id, UserState.IDLE)
     _user_sessions.pop(user_id, None)
+    _user_participants.pop(user_id, None)
 
     if rating >= 7:
         return (

@@ -97,13 +97,89 @@ def _select_cards(messages: list[dict[str, str]]) -> list[str]:
     return ranked[:_MAX_CARDS]
 
 
+_GROUP_SESSION_PROMPT = """
+[Групповая сессия]
+Участники: {names}
+
+## Обращение
+- К группе — на «вы»: «С чем вы пришли сегодня?»
+- К конкретному участнику — на «ты»: «{example_name}, как ты видишь эту ситуацию?»
+
+## Главный принцип
+Один вопрос — одному участнику — один ответ. Не задавай следующий вопрос, пока не получишь ответ на текущий. Не задавай вопрос группе целиком, если можно спросить конкретного человека.
+
+## Задача сессии
+Привести всех участников к ответам на один общий запрос. Если участники приходят с разными темами — найди общий знаменатель или помоги группе выбрать одну тему для этой сессии.
+
+## Групповой ритм GROW
+
+### 0. Контракт
+1. Спроси группу: «С чем вы пришли сегодня?»
+2. Выслушай ответ (один человек пишет за всех — это нормально)
+3. Если запрос один — уточни его у каждого участника по очереди: «{{Имя}}, что для тебя будет результатом 10 из 10?»
+4. Если запросы разные — помоги группе выбрать один общий
+5. После прояснения запроса — спроси каждого участника о времени: «{{Имя}}, сколько у тебя есть времени?»
+6. Если ответы о времени расходятся — приведи к единому
+
+### На каждом этапе GROW (G → R → O → W)
+
+Выполняй раунд опроса:
+
+1. Опроси каждого. Задай вопрос первому участнику по имени → дождись ответа → задай тот же (или адаптированный) вопрос следующему → и так по кругу.
+
+2. Определи уровень Дилтса каждого ответа (окружение → поведение → способности → убеждения → идентичность → миссия). Целевой уровень определяется текущей фазой GROW:
+   - G (Goal): убеждения / идентичность / миссия
+   - R (Reality): окружение / поведение / способности
+   - O (Options): способности / поведение / убеждения
+   - W (Will): поведение / окружение
+
+3. Выровняй уровни. Если ответы участников на разных уровнях Дилтса:
+   - Задай уточняющий вопрос каждому, кто не на целевом уровне: «{{Имя}}, ты говоришь о {{текущий уровень}}. А если посмотреть на уровне {{целевой уровень}} — что ты видишь?»
+   - Сделай до 2–3 попыток выравнивания
+   - Если прогресса нет — зафиксируй и двигайся дальше
+
+4. Разреши конфликты. Если ответы противоречат:
+   - Отрази противоречие группе
+   - Задай каждому уточняющий вопрос
+   - Старайся привести к общему пониманию — это ключевая ценность групповой сессии
+   - Если после 2–3 попыток не получается — зафиксируй обе позиции и двигайся дальше
+
+5. Только после выравнивания переходи к следующему этапу GROW.
+
+## Проверка авторства
+Если ты задал вопрос одному участнику, а из ответа явно следует, что отвечает другой — уточни: «Это ответ {{Имя}} или кого-то другого?»
+
+## Пропуск участника
+Если пользователь говорит, что у участника нет ответа — прими это спокойно и переходи к следующему.
+
+## Финальное резюме
+
+Общее резюме:
+- Общий запрос группы
+- Ключевые выводы и инсайты
+- Общий первый шаг (если применимо)
+- Динамика группы: где было единство, где расхождение
+
+Индивидуальное резюме (по каждому участнику):
+- {{Имя}}: ключевые инсайты, текущий уровень по Дилтсу, персональный первый шаг
+"""
+
+
 def _build_system_prompt(
     messages: list[dict[str, str]] | None = None,
     session_started_at: datetime | None = None,
     time_budget: str | None = None,
+    participants: list[str] | None = None,
 ) -> str:
     """Build system prompt from layers + conditional cards + session metadata."""
     prompt = _load_core_prompt()
+
+    # Add group session instructions
+    if participants:
+        prompt += "\n\n---\n\n" + _GROUP_SESSION_PROMPT.format(
+            names=", ".join(participants),
+            example_name=participants[0],
+        )
 
     # Add relevant retrieval cards
     if messages:
@@ -133,9 +209,12 @@ async def chat(
     messages: list[dict[str, str]],
     session_started_at: datetime | None = None,
     time_budget: str | None = None,
+    participants: list[str] | None = None,
 ) -> LLMResponse:
     """Send messages to OpenRouter and return assistant response with usage."""
-    system_prompt = _build_system_prompt(messages, session_started_at, time_budget)
+    system_prompt = _build_system_prompt(
+        messages, session_started_at, time_budget, participants
+    )
 
     payload = {
         "model": config.openrouter_model,
@@ -189,13 +268,16 @@ async def chat_stream(
     state: StreamState | None = None,
     session_started_at: datetime | None = None,
     time_budget: str | None = None,
+    participants: list[str] | None = None,
 ) -> AsyncGenerator[str, None]:
     """Stream LLM response via SSE. Yields accumulated text on each chunk.
 
     After iteration completes, state.response contains the final LLMResponse
     with content and usage data.
     """
-    system_prompt = _build_system_prompt(messages, session_started_at, time_budget)
+    system_prompt = _build_system_prompt(
+        messages, session_started_at, time_budget, participants
+    )
 
     payload = {
         "model": config.openrouter_model,

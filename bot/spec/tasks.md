@@ -46,9 +46,47 @@
 - [ ] `session.py` — проверка подписки в `start_session()`, убрать `decrement_free_sessions` из `_handle_rating()`
 - [ ] `bot.py` — проверка подписки перед любым хэндлером, CTA на `@shapovalov_vsegda`
 
-## Этап 3.6: Версионирование + тесты
-- [ ] `bot/VERSION` — semver, начало с `0.3.0`
-- [ ] `bot/tests/test_base.py` — 10 базовых тестов
+## Этап 3.6: Мульти-участник + отключение paywall (Сценарии 9 + 10)
+
+### 3.6.1 Миграция БД
+- [x] `migrations/004_multi_participant_and_paywall_off.sql` — `participant_count INT DEFAULT 1` и `participants JSONB` в `sessions`, UPDATE всех users `subscription_until = '2030-01-01'`
+
+### 3.6.2 db.py
+- [x] `get_or_create_user()` — дефолт `subscription_until` → `'2030-01-01 00:00:00+00'` в INSERT
+- [x] `set_session_participants(session_id, participants: list[str])` — UPDATE `participant_count` + `participants` (JSON)
+- [x] `get_session_participants(session_id) -> list[str] | None` — SELECT + распарсить JSON
+- [x] `get_session_meta()` — добавить `participants` в SELECT
+
+### 3.6.3 session.py — FSM и онбординг
+- [x] Новые состояния в `UserState`: `CHOOSING_MODE`, `COLLECTING_NAMES`, `CONFIRMING_NAMES`
+- [x] `_user_participants: dict[int, list[str]]` — in-memory хранение имён
+- [x] `start_session()` — создаёт DB-сессию, переводит в `CHOOSING_MODE`, возвращает «Сессия на одного или на нескольких?»
+- [x] `_handle_choosing_mode(user_id, text)` — эвристика «один/несколько», роутинг в `ACTIVE` или `COLLECTING_NAMES`
+- [x] `_handle_collecting_names(user_id, text)` — парсинг имён, сохранение в `_user_participants`, переход в `CONFIRMING_NAMES`
+- [x] `_handle_confirming_names(user_id, text)` — подтверждение → запись в DB → `ACTIVE`; отклонение → `COLLECTING_NAMES`
+
+### 3.6.4 session.py — роутинг сообщений
+- [x] `handle_message()` — роутинг по `CHOOSING_MODE` / `COLLECTING_NAMES` / `CONFIRMING_NAMES` перед проверкой `ACTIVE`
+- [x] `handle_message_stream()` — аналогичный роутинг (yield ответа без стриминга для онбординг-состояний)
+- [x] Загрузка `participants` из DB meta и передача в `llm.chat()` / `llm.chat_stream()`
+
+### 3.6.5 session.py — restore_state
+- [x] `restore_state()` — если сессия active и `participants IS NOT NULL` → восстановить `_user_participants`
+
+### 3.6.6 llm.py — групповой system prompt
+- [x] `_build_system_prompt()` — новый параметр `participants: list[str] | None`, добавление блока `[Групповая сессия]` с полным групповым ритмом GROW
+- [x] `chat()` — новый параметр `participants`, передача в `_build_system_prompt()`
+- [x] `chat_stream()` — новый параметр `participants`, передача в `_build_system_prompt()`
+
+### 3.6.7 Ручное тестирование
+- [ ] Соло-сессия: проверить, что флоу «один/несколько → один → стандартная сессия» работает
+- [ ] Групповая сессия: проверить онбординг (имена → подтверждение), ведение диалога по участникам, финальное резюме
+- [ ] Paywall: проверить, что новые пользователи получают доступ до 2030
+- [ ] Рестарт бота: проверить restore_state для соло и групповых сессий
+
+## Этап 3.7: Версионирование + тесты
+- [ ] `bot/VERSION` — semver, обновить до `0.4.0`
+- [ ] `bot/tests/test_base.py` — обновить/добавить тесты для мульти-участника
 
 ## Этап 4: Тестирование
 - [ ] Локальный запуск
