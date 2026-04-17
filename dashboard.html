@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ElectroCoach — Аналитика продакшена</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #fafaf7;
+    --surface: #ffffff;
+    --surface-2: #f3f4ef;
+    --border: #e4e4df;
+    --border-strong: #cbcbc3;
+    --text: #1a1a1a;
+    --text-muted: #6b6b65;
+    --text-dim: #9a9a92;
+    --accent: #2d6a4f;
+    --accent-soft: #e8f1ec;
+    --warn: #d97706;
+    --warn-soft: #fef3e6;
+    --danger: #991b1b;
+    --danger-soft: #fee2e2;
+    --blue: #5b8def;
+    --blue-soft: #e6ecfb;
+    --gray: #64748b;
+    --gray-soft: #f1f5f9;
+    --shadow: 0 1px 2px rgba(0,0,0,.04), 0 2px 8px rgba(0,0,0,.04);
+    --radius: 8px;
+    --radius-lg: 12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  header.top {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .brand { display: flex; flex-direction: column; }
+  .brand h1 { font-size: 16px; font-weight: 600; letter-spacing: -0.01em; }
+  .brand .sub { font-size: 12px; color: var(--text-muted); }
+  .meta { font-size: 12px; color: var(--text-dim); }
+  .meta strong { color: var(--text-muted); font-weight: 500; }
+
+  .content { max-width: 1200px; margin: 0 auto; padding: 24px; }
+
+  /* KPI cards */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+  .kpi {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    text-align: center;
+  }
+  .kpi-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+  .kpi-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-dim);
+    font-weight: 500;
+    margin-top: 4px;
+  }
+  .kpi-note {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 2px;
+  }
+
+  /* Section blocks */
+  .section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 20px 24px;
+    margin-bottom: 20px;
+  }
+  .section-title {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-dim);
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+
+  /* Funnel */
+  .funnel { display: flex; flex-direction: column; gap: 6px; }
+  .funnel-step {
+    display: grid;
+    grid-template-columns: 180px 1fr 60px 60px;
+    align-items: center;
+    gap: 12px;
+    font-size: 13px;
+  }
+  .funnel-label { font-weight: 500; }
+  .funnel-bar-wrap {
+    background: var(--surface-2);
+    border-radius: 4px;
+    height: 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .funnel-bar {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.6s ease;
+  }
+  .funnel-count {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    text-align: right;
+    font-weight: 500;
+  }
+  .funnel-pct {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--text-dim);
+    text-align: right;
+  }
+
+  /* User cards */
+  .users-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 12px;
+  }
+  .user-card {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.15s;
+    background: var(--surface);
+  }
+  .user-card:hover { border-color: var(--border-strong); transform: translateY(-1px); box-shadow: var(--shadow); }
+  .user-card.active { border-color: var(--accent); background: var(--accent-soft); box-shadow: 0 0 0 3px rgba(45,106,79,.12); }
+  .user-card.churned { opacity: 0.5; }
+
+  .user-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+  .user-name { font-size: 15px; font-weight: 600; }
+  .user-handle {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+  .user-badges { display: flex; gap: 6px; flex-wrap: wrap; }
+  .badge {
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  .badge-sessions { background: var(--blue-soft); color: #1e40af; }
+  .badge-msgs { background: var(--accent-soft); color: var(--accent); }
+  .badge-score { background: var(--warn-soft); color: #9a3412; }
+  .badge-churned { background: var(--danger-soft); color: var(--danger); }
+  .badge-risk-low { background: var(--accent-soft); color: var(--accent); }
+  .badge-risk-med { background: var(--warn-soft); color: var(--warn); }
+  .badge-risk-high { background: var(--danger-soft); color: var(--danger); }
+
+  .user-topic {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+    line-height: 1.4;
+  }
+
+  .user-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .user-stat {
+    background: var(--surface-2);
+    border-radius: 6px;
+    padding: 8px;
+    text-align: center;
+  }
+  .user-stat-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 16px;
+    font-weight: 600;
+  }
+  .user-stat-lbl {
+    font-size: 10px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .user-insight {
+    margin-top: 10px;
+    padding: 10px 12px;
+    background: var(--surface-2);
+    border-radius: 6px;
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.5;
+    border-left: 3px solid var(--accent);
+  }
+  .user-insight q {
+    font-style: italic;
+    color: var(--text);
+  }
+
+  /* Charts area */
+  .chart-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+  @media (max-width: 768px) {
+    .chart-row { grid-template-columns: 1fr; }
+    .users-grid { grid-template-columns: 1fr; }
+    .funnel-step { grid-template-columns: 120px 1fr 40px 40px; font-size: 12px; }
+  }
+
+  /* Bar chart */
+  .bar-chart { display: flex; flex-direction: column; gap: 8px; }
+  .bar-row {
+    display: grid;
+    grid-template-columns: 80px 1fr 50px;
+    align-items: center;
+    gap: 10px;
+  }
+  .bar-label { font-size: 12px; color: var(--text-muted); text-align: right; }
+  .bar-track {
+    background: var(--surface-2);
+    border-radius: 4px;
+    height: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.6s ease;
+  }
+  .bar-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  /* Topic tags */
+  .topic-cloud { display: flex; flex-wrap: wrap; gap: 8px; }
+  .topic-tag {
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 500;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-muted);
+    position: relative;
+  }
+  .topic-count {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    background: var(--accent);
+    color: white;
+    border-radius: 999px;
+    padding: 1px 6px;
+    margin-left: 6px;
+    font-weight: 600;
+  }
+
+  /* GROW progress */
+  .grow-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .grow-table th {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-dim);
+    font-weight: 600;
+    padding: 6px 8px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+  }
+  .grow-table th:first-child { text-align: left; }
+  .grow-table td { padding: 8px; text-align: center; border-bottom: 1px solid var(--surface-2); }
+  .grow-table td:first-child { text-align: left; font-weight: 500; }
+  .grow-yes { color: var(--accent); font-weight: 600; }
+  .grow-partial { color: var(--warn); }
+  .grow-no { color: var(--text-dim); }
+
+  /* Bot patterns */
+  .pattern-card {
+    background: var(--surface-2);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    margin-bottom: 10px;
+  }
+  .pattern-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+  .pattern-label { font-size: 13px; font-weight: 500; }
+  .pattern-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .pattern-bar-bg {
+    background: var(--border);
+    border-radius: 3px;
+    height: 6px;
+    overflow: hidden;
+  }
+  .pattern-bar-fill { height: 100%; border-radius: 3px; }
+  .pattern-note { font-size: 11px; color: var(--text-dim); margin-top: 4px; }
+
+  /* Strengths / Weaknesses */
+  .sw-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  @media (max-width: 768px) { .sw-grid { grid-template-columns: 1fr; } }
+  .sw-list { list-style: none; }
+  .sw-list li {
+    font-size: 13px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--surface-2);
+    line-height: 1.5;
+    display: flex;
+    gap: 8px;
+  }
+  .sw-list li:last-child { border-bottom: none; }
+  .sw-icon { flex-shrink: 0; font-size: 14px; line-height: 1.5; }
+
+  /* Timeline */
+  .timeline { display: flex; gap: 0; align-items: stretch; height: 120px; padding-top: 8px; }
+  .timeline-day {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+  .timeline-bar-wrap {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    width: 100%;
+    align-items: center;
+  }
+  .timeline-bar {
+    width: 60%;
+    border-radius: 4px 4px 0 0;
+    transition: height 0.6s ease;
+    min-height: 2px;
+  }
+  .timeline-label {
+    font-size: 10px;
+    color: var(--text-dim);
+    font-weight: 500;
+  }
+  .timeline-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-muted);
+  }
+
+  /* Detail pane (shown on user click) */
+  .detail-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.3);
+    z-index: 100;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 40px 20px;
+    overflow-y: auto;
+  }
+  .detail-overlay.visible { display: flex; }
+  .detail-panel {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    max-width: 640px;
+    width: 100%;
+    padding: 28px;
+    box-shadow: 0 8px 32px rgba(0,0,0,.15);
+    position: relative;
+  }
+  .detail-close {
+    position: absolute;
+    top: 12px;
+    right: 16px;
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: var(--text-dim);
+    padding: 4px;
+    line-height: 1;
+  }
+  .detail-close:hover { color: var(--text); }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="brand">
+    <h1>ElectroCoach — Аналитика продакшена</h1>
+    <span class="sub">Дашборд использования Telegram-бота</span>
+  </div>
+  <div class="meta">
+    <strong>Снимок:</strong> 17.04.2026 &nbsp;|&nbsp;
+    <strong>В проде с:</strong> 13 апр (4 дня) &nbsp;|&nbsp;
+    <strong>Источник:</strong> PostgreSQL production DB
+  </div>
+</header>
+
+<div class="content">
+
+  <!-- KPIs -->
+  <div class="kpi-grid">
+    <div class="kpi">
+      <div class="kpi-value" style="color:var(--accent)">7</div>
+      <div class="kpi-label">Пользователи</div>
+      <div class="kpi-note">6 активных, 1 молчун</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-value" style="color:var(--blue)">10</div>
+      <div class="kpi-label">Сессии</div>
+      <div class="kpi-note">9 с сообщениями</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-value" style="color:var(--text)">211</div>
+      <div class="kpi-label">Сообщения</div>
+      <div class="kpi-note">107 юзер / 104 бот</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-value" style="color:var(--warn)">23</div>
+      <div class="kpi-label">Сред. сообщ./сессию</div>
+      <div class="kpi-note">разброс 2–50</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-value" style="color:var(--accent)">5.3с</div>
+      <div class="kpi-label">Ответ бота (медиана)</div>
+      <div class="kpi-note">среднее 8.5с</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-value" style="color:var(--danger)">20%</div>
+      <div class="kpi-label">Завершённые сессии</div>
+      <div class="kpi-note">2 из 10</div>
+    </div>
+  </div>
+
+  <!-- Activation Funnel -->
+  <div class="section">
+    <div class="section-title">Воронка активации</div>
+    <div class="funnel" id="funnel"></div>
+  </div>
+
+  <div class="chart-row">
+    <!-- Time of Day -->
+    <div class="section">
+      <div class="section-title">Сообщения по часам (МСК)</div>
+      <div class="timeline" id="hours-chart"></div>
+    </div>
+    <!-- Acquisition Timeline -->
+    <div class="section">
+      <div class="section-title">Регистрации и сессии по дням</div>
+      <div class="timeline" id="daily-chart"></div>
+    </div>
+  </div>
+
+  <!-- Topic Clustering -->
+  <div class="section">
+    <div class="section-title">Темы запросов</div>
+    <div class="topic-cloud" id="topics"></div>
+    <div style="margin-top:16px">
+      <div class="section-title" style="margin-bottom:10px">Поверхностная проблема &rarr; Настоящая проблема</div>
+      <div class="bar-chart">
+        <div class="pattern-card" style="border-left:3px solid var(--blue)">
+          <div style="font-size:13px"><strong>Alexey:</strong> <span style="color:var(--text-dim)">&laquo;Хочу денег много&raquo;</span> &rarr; <span style="color:var(--accent)">&laquo;Хочу чувствовать, что чего-то стою&raquo;</span></div>
+        </div>
+        <div class="pattern-card" style="border-left:3px solid var(--blue)">
+          <div style="font-size:13px"><strong>Лера:</strong> <span style="color:var(--text-dim)">&laquo;Нет мотивации на работу&raquo;</span> &rarr; <span style="color:var(--accent)">&laquo;Изменилось отношение к себе&raquo;</span></div>
+        </div>
+        <div class="pattern-card" style="border-left:3px solid var(--blue)">
+          <div style="font-size:13px"><strong>Alexey:</strong> <span style="color:var(--text-dim)">&laquo;Как уснуть побыстрее?&raquo;</span> &rarr; <span style="color:var(--accent)">&laquo;Есть рабочий способ, но не могу начать&raquo;</span></div>
+        </div>
+        <div class="pattern-card" style="border-left:3px solid var(--blue)">
+          <div style="font-size:13px"><strong>Анастасия:</strong> <span style="color:var(--text-dim)">&laquo;СТМ или кобрендинг?&raquo;</span> &rarr; <span style="color:var(--accent)">&laquo;На каких условиях это вообще выгодно?&raquo;</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- User Profiles -->
+  <div class="section">
+    <div class="section-title">Профили пользователей (клик для деталей)</div>
+    <div class="users-grid" id="users-grid"></div>
+  </div>
+
+  <div class="chart-row">
+    <!-- Response Times -->
+    <div class="section">
+      <div class="section-title">Время ответа юзера (сред., сек)</div>
+      <div class="bar-chart" id="reply-times"></div>
+    </div>
+    <!-- Message Length -->
+    <div class="section">
+      <div class="section-title">Сред. длина сообщения юзера (символы)</div>
+      <div class="bar-chart" id="msg-lengths"></div>
+    </div>
+  </div>
+
+  <!-- GROW Stages -->
+  <div class="section">
+    <div class="section-title">Прогресс по методологии GROW</div>
+    <table class="grow-table" id="grow-table">
+      <thead>
+        <tr>
+          <th>Сессия</th>
+          <th>Контракт</th>
+          <th>Goal</th>
+          <th>Reality</th>
+          <th>Options</th>
+          <th>Will</th>
+        </tr>
+      </thead>
+      <tbody id="grow-body"></tbody>
+    </table>
+  </div>
+
+  <!-- Bot Patterns -->
+  <div class="chart-row">
+    <div class="section">
+      <div class="section-title">Паттерны поведения бота</div>
+      <div id="bot-patterns"></div>
+    </div>
+    <div class="section">
+      <div class="section-title">Оценка качества</div>
+      <div id="quality-scores"></div>
+    </div>
+  </div>
+
+  <!-- Strengths / Weaknesses -->
+  <div class="section">
+    <div class="section-title">Сильные и слабые стороны</div>
+    <div class="sw-grid">
+      <div>
+        <h3 style="font-size:13px;font-weight:600;color:var(--accent);margin-bottom:10px">Сильные стороны</h3>
+        <ul class="sw-list">
+          <li><span class="sw-icon">+</span> Контрактинг работает — цель + тайминг в начале сессии</li>
+          <li><span class="sw-icon">+</span> Уровни Дилтса выявляют реальные блокеры</li>
+          <li><span class="sw-icon">+</span> Хорошо обрабатывает «не знаю» — переформулирует, упрощает</li>
+          <li><span class="sw-icon">+</span> Адаптирует глубину под юзера — коротко для Alexey, развёрнуто для darik</li>
+          <li><span class="sw-icon">+</span> Держит режим вопросов по коучинговой методологии</li>
+          <li><span class="sw-icon">+</span> Работает для неожиданных кейсов (бизнес, бессонница, горе)</li>
+        </ul>
+      </div>
+      <div>
+        <h3 style="font-size:13px;font-weight:600;color:var(--danger);margin-bottom:10px">Слабые стороны</h3>
+        <ul class="sw-list">
+          <li><span class="sw-icon" style="color:var(--danger)">!</span> «Я правильно понял?» в 40–75% сообщений бота (56 раз всего)</li>
+          <li><span class="sw-icon" style="color:var(--danger)">!</span> Ошибки с полом — мужской род для женщин («ты не выпал»)</li>
+          <li><span class="sw-icon" style="color:var(--danger)">!</span> Перегруз вариантами — 7–9 вместо 3–4</li>
+          <li><span class="sw-icon" style="color:var(--danger)">!</span> 80% сессий не закрыты — нет напоминания про /stop и оценку</li>
+          <li><span class="sw-icon" style="color:var(--warn)">!</span> Ломает коучинг на бизнес-вопросах (дрифт в режим советника)</li>
+          <li><span class="sw-icon" style="color:var(--warn)">!</span> Ранний баг: у Кирилла сессия 1 — 0 сохранённых сообщений бота</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Product Implications -->
+  <div class="section">
+    <div class="section-title">Продуктовые выводы</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px" id="implications"></div>
+  </div>
+
+</div>
+
+<!-- Detail overlay -->
+<div class="detail-overlay" id="detail-overlay">
+  <div class="detail-panel" id="detail-panel">
+    <button class="detail-close" onclick="closeDetail()">&times;</button>
+    <div id="detail-content"></div>
+  </div>
+</div>
+
+<script>
+const DATA = {
+  funnel: [
+    { label: 'Зарегистрировались (/start)', count: 7, pct: 100 },
+    { label: 'Написали первое сообщение', count: 6, pct: 86 },
+    { label: '10+ сообщений в сессии', count: 6, pct: 86 },
+    { label: 'Завершили сессию (/stop)', count: 2, pct: 29 },
+    { label: 'Поставили оценку', count: 2, pct: 29 },
+    { label: 'Вернулись на 2-ю сессию', count: 2, pct: 29 },
+    { label: 'Вернулись на 3-ю сессию', count: 1, pct: 14 },
+  ],
+  hours: [
+    { h: '10:00', v: 10 }, { h: '12:00', v: 26 }, { h: '13:00', v: 20 },
+    { h: '14:00', v: 6 }, { h: '15:00', v: 18 }, { h: '16:00', v: 31 },
+    { h: '17:00', v: 16 }, { h: '21:00', v: 2 }, { h: '23:00', v: 55 }, { h: '00:00', v: 27 },
+  ],
+  daily: [
+    { d: '13 апр', users: 2, sessions: 3 },
+    { d: '14 апр', users: 2, sessions: 3 },
+    { d: '15 апр', users: 1, sessions: 1 },
+    { d: '16 апр', users: 2, sessions: 2 },
+  ],
+  topics: [
+    { name: 'Деньги / доход', count: 3, color: 'var(--accent)' },
+    { name: 'Самоценность / идентичность', count: 3, color: 'var(--blue)' },
+    { name: 'Тревога / эмоции', count: 3, color: 'var(--warn)' },
+    { name: 'Отношения / горе', count: 1, color: '#e11d48' },
+    { name: 'Бизнес-решение', count: 1, color: 'var(--gray)' },
+    { name: 'Бессонница', count: 1, color: '#7c3aed' },
+  ],
+  users: [
+    {
+      name: 'Кирилл', handle: '@Milenkij', registered: '13 апр',
+      sessions: 2, messages: 52, duration: '46 мин', avgUserLen: 35, avgBotLen: 370,
+      replyTime: 98, botReply: 15.6, score: null, risk: 'founder',
+      topic: 'Деньги, монетизация, идентичность фаундера',
+      insight: 'Спросил о приватности данных: <q>Хранишь ли ты мои ответы для аналитики?</q>',
+      grow: [
+        { s: 'Сессия 1 (тест)', c:'no',g:'no',r:'no',o:'no',w:'no' },
+        { s: 'Сессия 2', c:'yes',g:'yes',r:'yes',o:'yes',w:'yes' },
+      ],
+      detail: 'Фаундер, тестовый юзер. Сессия 1 — пробная (2 сообщ., оценка 1). Сессия 2 — самая длинная по времени (46 мин, 50 сообщ.) — исследовал монетизацию ElectroCoach и самоидентичность как фаундера. Единственный, кто прошёл полный цикл GROW. Самое медленное время ответа бота (15.6с) — вероятно, ранняя версия. От регистрации до первого сообщения: 11 сек.'
+    },
+    {
+      name: 'Alexey', handle: '@shapovalov_vsegda', registered: '13 апр',
+      sessions: 3, messages: 82, duration: '6–12 мин', avgUserLen: 21, avgBotLen: 279,
+      replyTime: 24, botReply: 6.1, score: 7.5, risk: 'low',
+      topic: 'Бессонница, самоценность, доход, кризис идентичности',
+      insight: 'Бот раскрыл петлю: <q>мало зарабатываю = мало стою</q> &rarr; паралич &rarr; не может изменить доход. Подтвердил: <q>Да, класс</q>. Но сопротивлялся действиям: <q>Никакой, сложно оочень</q>',
+      grow: [
+        { s: 'Сессия про сон', c:'yes',g:'yes',r:'yes',o:'partial',w:'no' },
+        { s: 'Самоценность', c:'no',g:'no',r:'no',o:'yes',w:'yes' },
+        { s: 'Сессия 3', c:'no',g:'no',r:'no',o:'no',w:'no' },
+      ],
+      detail: 'Пауэр-юзер — единственный, кто вернулся (3 сессии). Самый быстрый ответчик (24с в среднем). Ультра-короткие ответы (15–28 симв. в среднем). Сессия 1: бессонница — бот нашёл практический блокер (забыл, как начать дыхательное упражнение). Сессия 2: глубокая работа с самоценностью — оценка 7/10, сказал «Да, класс» на диагноз, но «Никакой, сложно оочень» на шаги действий. Говорит «не знаю» 6 раз (больше всех). Вернулся на след. день, потом ещё раз в тот же день.'
+    },
+    {
+      name: 'Анастасия', handle: '@minaeva', registered: '14 апр',
+      sessions: 1, messages: 23, duration: '2 дня', avgUserLen: 42, avgBotLen: 895,
+      replyTime: 189, botReply: 8.7, score: 9, risk: 'medium',
+      topic: 'СТМ vs кобрендинг для производства пробиотиков',
+      insight: 'Неожиданный кейс: чистый бизнес-консалтинг. Бот дал 7 вариантов с плюсами/минусами. Не завершила решение, но получила чёткий фреймворк.',
+      grow: [
+        { s: 'Бизнес-сессия', c:'yes',g:'no',r:'no',o:'yes',w:'no' },
+      ],
+      detail: 'Бизнес-юзер. Зарегистрировалась за день до начала, вернулась через 21 час. Сессия растянулась на 2 дня. Самые длинные ответы бота (895 симв. в среднем) — бот переключился в режим структурированного бизнес-анализа. Самый медленный ответ юзера (189с) — обдумывала реальные бизнес-решения. Тема: делать СТМ или кобрендинг для пробиотиков? Бот определил ключевой критерий (маржа, а не бренд), рекомендовал СТМ, дал 7 вариантов. Спросила, когда кобрендинг имеет смысл. Лендинга под этот кейс нет.'
+    },
+    {
+      name: 'Glebch', handle: '@iGlebch', registered: '14 апр',
+      sessions: 1, messages: 12, duration: '~5 мин актив', avgUserLen: 48, avgBotLen: 277,
+      replyTime: 83, botReply: 3.0, score: 5, risk: 'high',
+      topic: 'Тревога, хаос в задачах, кассовый разрыв, страх неизвестности',
+      insight: 'Отвалился после вопроса бота: «какой один результат сегодня снизил бы тревогу больше всего?» 12.5 часов между сообщениями 1 и 3 — начал вечером, продолжил утром.',
+      grow: [
+        { s: 'Сессия про тревогу', c:'no',g:'no',r:'no',o:'no',w:'no' },
+      ],
+      detail: 'Совмещённый бизнес + личный кризис. Упомянул «кассовый разрыв». Начал сессию вечером, продолжил утром (разрыв 12.5ч). Бот корректно сузил до «хаос в задачах» как самый острый блокер, затем задал правильный фокусирующий вопрос — но Glebch не ответил. Дошёл только до раннего этапа Reality. Самые быстрые ответы бота (3.0с). Риск: может нуждаться в большем, чем может дать бот.'
+    },
+    {
+      name: 'Insaf', handle: '@tjins', registered: '15 апр',
+      sessions: 1, messages: 0, duration: '—', avgUserLen: 0, avgBotLen: 0,
+      replyTime: null, botReply: null, score: null, risk: 'churned',
+      topic: 'Не вступил в диалог',
+      insight: 'Нажал /start, но не написал ни одного сообщения. 100% провал активации.',
+      grow: [],
+      detail: 'Молчаливая регистрация. Нажал /start, увидел приветствие, ушёл. Онбординг /start не смог конвертировать регистрацию в первое сообщение. Гипотеза: приветственное сообщение нуждается в более сильном хуке или первом вопросе.'
+    },
+    {
+      name: 'Лера', handle: '@mini_lerka', registered: '16 апр',
+      sessions: 1, messages: 18, duration: '3.1 мин', avgUserLen: 31, avgBotLen: 322,
+      replyTime: 20, botReply: 3.0, score: 6, risk: 'medium-high',
+      topic: 'Потеря мотивации к работе, разочарование в себе',
+      insight: 'Ключевое открытие: <q>отношение к себе</q> изменилось раньше, чем упала мотивация к работе. Бот это уловил, но сессия закончилась слишком рано. Баг с полом: бот использовал мужской род «ты не выпал» для девушки.',
+      grow: [
+        { s: 'Сессия про мотивацию', c:'no',g:'no',r:'no',o:'no',w:'partial' },
+      ],
+      detail: 'Самая короткая реальная сессия (3.1 мин). Второй по скорости ответчик (20с). Бот определил, что сначала изменилось отношение к себе, а потом уже обвалилась мотивация — верный терапевтический инсайт. Но сессия оборвалась именно когда бот спросил, что изменилось. Ошибка с полом: «ты не выпал» (мужской род) для девушки. Не дошла до этапа Options.'
+    },
+    {
+      name: 'darik', handle: '@dbazurina', registered: '16 апр',
+      sessions: 1, messages: 24, duration: '21 мин', avgUserLen: 276, avgBotLen: 1012,
+      replyTime: 106, botReply: 8.8, score: 8, risk: 'medium-low',
+      topic: 'Расставание, горе, кризис системы убеждений',
+      insight: 'Самая глубокая эмоциональная сессия. Бот разделил <q>он не остался</q> и <q>я для него ничего не значу</q>. Назвал двойное горе: потеря человека + потеря веры в любовь как концепцию. Юзер оспорила гипотезу — бот адаптировался хорошо.',
+      grow: [
+        { s: 'Сессия про расставание', c:'no',g:'no',r:'no',o:'yes',w:'no' },
+      ],
+      detail: 'Самая глубокая эмоциональная сессия. Средняя длина сообщения 276 симв. (7x от среднего) — пишет развёрнутыми абзацами. Бот давал самые длинные ответы (1012 симв. в среднем). Ключевые терапевтические ходы: (1) разделил «он не остался» ≠ «я ничего не значу», (2) нашёл столкновение убеждений: её модель «если любишь — борешься» vs его поведение, (3) назвал двойное горе: потеря человека + потеря веры в любовь. Оспорила: «Я не пытаюсь доказать свою значимость через это» — бот верно скорректировал фрейм. Дошёл до Options (9 вариантов по уровням Дилтса), но не дошёл до Will/приверженности.'
+    },
+  ],
+  replyTimes: [
+    { name: 'Лера', val: 20 },
+    { name: 'Alexey', val: 24 },
+    { name: 'Glebch', val: 83 },
+    { name: 'Кирилл', val: 98 },
+    { name: 'darik', val: 106 },
+    { name: 'Анастасия', val: 189 },
+  ],
+  msgLengths: [
+    { name: 'Alexey', val: 21 },
+    { name: 'Лера', val: 31 },
+    { name: 'Кирилл', val: 35 },
+    { name: 'Анастасия', val: 42 },
+    { name: 'Glebch', val: 48 },
+    { name: 'darik', val: 276 },
+  ],
+  botPatterns: [
+    { label: '«Я правильно понял?»', val: 56, total: 104, note: '54% всех сообщений бота. Нужны 5–8 альтернативных паттернов рефлексии.' },
+    { label: '«Не знаю» от юзеров', val: 10, total: 107, note: 'Alexey: 6, darik: 2. Бот справляется хорошо — переформулирует и упрощает.' },
+  ],
+  quality: [
+    { name: 'Анастасия (бизнес)', score: 9, color: 'var(--accent)', note: 'Структурированный анализ, чёткая рекомендация' },
+    { name: 'Alexey (сон)', score: 8, color: 'var(--accent)', note: 'Нашёл конкретный блокер, дошёл до действий' },
+    { name: 'darik (расставание)', score: 8, color: 'var(--accent)', note: 'Глубокая эмоциональная работа, разделение убеждений' },
+    { name: 'Alexey (самоценность)', score: 7, color: 'var(--blue)', note: 'Отличный диагноз, но нет конверсии в действие' },
+    { name: 'Лера (мотивация)', score: 6, color: 'var(--warn)', note: 'Хороший диагноз, но слишком коротко' },
+    { name: 'Glebch (тревога)', score: 5, color: 'var(--warn)', note: 'Верное направление, но юзер отвалился' },
+  ],
+  implications: [
+    { title: 'UX закрытия сессий', desc: 'Авто-напоминание закрыть/оценить после неактивности', priority: 'high' },
+    { title: 'Определение пола', desc: 'Эвристика по first_name для корректных форм рода', priority: 'high' },
+    { title: 'Фикс «Я правильно понял?»', desc: 'Добавить 5–8 альтернативных паттернов рефлексии в промпт', priority: 'high' },
+    { title: 'Фоллоу-ап сообщения', desc: 'Мягкое напоминание через 24ч тишины', priority: 'medium' },
+    { title: 'Бизнес-кейс', desc: 'Анастасия показала спрос на фасилитацию решений', priority: 'medium' },
+    { title: 'Ночной позишенинг', desc: 'Пик в 23:00+ МСК — усилить позиционирование «рефлексия в 3 ночи»', priority: 'low' },
+    { title: 'Хук онбординга', desc: 'Insaf зарегался, но не написал — /start нужен сильнее хук', priority: 'medium' },
+    { title: 'Лимит вариантов', desc: 'Макс. 3–4 варианта на этапе Options GROW, а не 7–9', priority: 'medium' },
+  ],
+};
+
+// --- Render functions ---
+function renderFunnel() {
+  const el = document.getElementById('funnel');
+  const maxCount = DATA.funnel[0].count;
+  el.innerHTML = DATA.funnel.map(f => {
+    const color = f.pct > 50 ? 'var(--accent)' : f.pct > 20 ? 'var(--warn)' : 'var(--danger)';
+    return `<div class="funnel-step">
+      <span class="funnel-label">${f.label}</span>
+      <div class="funnel-bar-wrap"><div class="funnel-bar" style="width:${f.pct}%;background:${color}"></div></div>
+      <span class="funnel-count">${f.count}</span>
+      <span class="funnel-pct">${f.pct}%</span>
+    </div>`;
+  }).join('');
+}
+
+function renderHours() {
+  const el = document.getElementById('hours-chart');
+  const maxV = Math.max(...DATA.hours.map(h => h.v));
+  el.innerHTML = DATA.hours.map(h => {
+    const pct = (h.v / maxV * 100).toFixed(0);
+    const color = h.v === maxV ? 'var(--accent)' : h.v > 25 ? 'var(--blue)' : 'var(--border-strong)';
+    return `<div class="timeline-day">
+      <div class="timeline-val">${h.v}</div>
+      <div class="timeline-bar-wrap"><div class="timeline-bar" style="height:${pct}%;background:${color}"></div></div>
+      <div class="timeline-label">${h.h}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderDaily() {
+  const el = document.getElementById('daily-chart');
+  const maxV = Math.max(...DATA.daily.map(d => d.sessions));
+  el.innerHTML = DATA.daily.map(d => {
+    const pctU = (d.users / 3 * 100).toFixed(0);
+    const pctS = (d.sessions / 4 * 100).toFixed(0);
+    return `<div class="timeline-day" style="gap:2px">
+      <div class="timeline-val" style="font-size:9px">${d.users}п / ${d.sessions}с</div>
+      <div class="timeline-bar-wrap" style="flex-direction:row;gap:4px;align-items:flex-end;justify-content:center">
+        <div style="width:30%;height:${pctU}%;background:var(--accent);border-radius:3px 3px 0 0;min-height:4px"></div>
+        <div style="width:30%;height:${pctS}%;background:var(--blue);border-radius:3px 3px 0 0;min-height:4px"></div>
+      </div>
+      <div class="timeline-label">${d.d.replace(' апр','')}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderTopics() {
+  const el = document.getElementById('topics');
+  el.innerHTML = DATA.topics.map(t =>
+    `<span class="topic-tag" style="border-color:${t.color}">${t.name}<span class="topic-count" style="background:${t.color}">${t.count}</span></span>`
+  ).join('');
+}
+
+function renderUsers() {
+  const el = document.getElementById('users-grid');
+  el.innerHTML = DATA.users.map((u, i) => {
+    const riskBadge = u.risk === 'churned' ? '<span class="badge badge-churned">отвалился</span>'
+      : u.risk === 'high' ? '<span class="badge badge-risk-high">высокий риск</span>'
+      : u.risk === 'medium-high' ? '<span class="badge badge-risk-med">ср.-выс. риск</span>'
+      : u.risk === 'medium' ? '<span class="badge badge-risk-med">средний риск</span>'
+      : u.risk === 'medium-low' ? '<span class="badge badge-risk-low">ср.-низ. риск</span>'
+      : u.risk === 'low' ? '<span class="badge badge-risk-low">низкий риск</span>'
+      : '<span class="badge" style="background:var(--gray-soft);color:var(--gray)">фаундер</span>';
+    const scoreBadge = u.score ? `<span class="badge badge-score">${u.score}/10</span>` : '';
+    return `<div class="user-card ${u.risk === 'churned' ? 'churned' : ''}" onclick="openDetail(${i})">
+      <div class="user-head">
+        <div>
+          <div class="user-name">${u.name}</div>
+          <div class="user-handle">${u.handle} &middot; ${u.registered}</div>
+        </div>
+        <div class="user-badges">
+          <span class="badge badge-sessions">${u.sessions} сес</span>
+          <span class="badge badge-msgs">${u.messages} сообщ</span>
+          ${scoreBadge}
+          ${riskBadge}
+        </div>
+      </div>
+      <div class="user-topic">${u.topic}</div>
+      ${u.messages > 0 ? `<div class="user-stats">
+        <div class="user-stat"><div class="user-stat-val">${u.duration}</div><div class="user-stat-lbl">Длительность</div></div>
+        <div class="user-stat"><div class="user-stat-val">${u.replyTime || '—'}с</div><div class="user-stat-lbl">Время ответа</div></div>
+        <div class="user-stat"><div class="user-stat-val">${u.avgUserLen}</div><div class="user-stat-lbl">Сред. длина</div></div>
+      </div>` : ''}
+      <div class="user-insight">${u.insight}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderBarChart(id, data, maxVal, color) {
+  const el = document.getElementById(id);
+  const mx = maxVal || Math.max(...data.map(d => d.val));
+  el.innerHTML = data.map(d => {
+    const pct = (d.val / mx * 100).toFixed(0);
+    const c = color || (d.val > mx * 0.7 ? 'var(--accent)' : d.val > mx * 0.4 ? 'var(--blue)' : 'var(--border-strong)');
+    return `<div class="bar-row">
+      <span class="bar-label">${d.name}</span>
+      <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${c}"></div></div>
+      <span class="bar-val">${d.val}</span>
+    </div>`;
+  }).join('');
+}
+
+function renderGrow() {
+  const body = document.getElementById('grow-body');
+  const allGrow = [];
+  DATA.users.forEach(u => u.grow.forEach(g => allGrow.push({ ...g, user: u.name })));
+  body.innerHTML = allGrow.map(g => {
+    const cell = (v) => v === 'yes' ? '<td class="grow-yes">&#10003;</td>'
+      : v === 'partial' ? '<td class="grow-partial">~</td>'
+      : '<td class="grow-no">&middot;</td>';
+    return `<tr><td>${g.user}: ${g.s}</td>${cell(g.c)}${cell(g.g)}${cell(g.r)}${cell(g.o)}${cell(g.w)}</tr>`;
+  }).join('');
+}
+
+function renderBotPatterns() {
+  const el = document.getElementById('bot-patterns');
+  el.innerHTML = DATA.botPatterns.map(p => {
+    const pct = (p.val / p.total * 100).toFixed(0);
+    const color = pct > 40 ? 'var(--danger)' : pct > 20 ? 'var(--warn)' : 'var(--accent)';
+    return `<div class="pattern-card">
+      <div class="pattern-head">
+        <span class="pattern-label">${p.label}</span>
+        <span class="pattern-val" style="color:${color}">${p.val} / ${p.total} (${pct}%)</span>
+      </div>
+      <div class="pattern-bar-bg"><div class="pattern-bar-fill" style="width:${pct}%;background:${color}"></div></div>
+      <div class="pattern-note">${p.note}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderQuality() {
+  const el = document.getElementById('quality-scores');
+  el.innerHTML = DATA.quality.map(q => {
+    const pct = q.score * 10;
+    return `<div class="pattern-card">
+      <div class="pattern-head">
+        <span class="pattern-label">${q.name}</span>
+        <span class="pattern-val" style="color:${q.color}">${q.score}/10</span>
+      </div>
+      <div class="pattern-bar-bg"><div class="pattern-bar-fill" style="width:${pct}%;background:${q.color}"></div></div>
+      <div class="pattern-note">${q.note}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderImplications() {
+  const el = document.getElementById('implications');
+  const colors = { high: 'var(--danger)', medium: 'var(--warn)', low: 'var(--text-dim)' };
+  const labels = { high: 'ВЫСОК', medium: 'СРЕД', low: 'НИЗК' };
+  el.innerHTML = DATA.implications.map(im => `
+    <div class="pattern-card" style="border-left:3px solid ${colors[im.priority]}">
+      <div class="pattern-head">
+        <span class="pattern-label">${im.title}</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;color:${colors[im.priority]}">${labels[im.priority]}</span>
+      </div>
+      <div class="pattern-note" style="margin-top:2px">${im.desc}</div>
+    </div>
+  `).join('');
+}
+
+function openDetail(idx) {
+  const u = DATA.users[idx];
+  const el = document.getElementById('detail-content');
+  el.innerHTML = `
+    <div style="margin-bottom:16px">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim);margin-bottom:4px">${u.handle} &middot; регистрация ${u.registered}</div>
+      <h2 style="font-size:22px;font-weight:600;margin-bottom:6px">${u.name}</h2>
+      <div style="font-size:13px;color:var(--text-muted);margin-bottom:12px">${u.topic}</div>
+    </div>
+    <div style="font-size:13.5px;line-height:1.6;color:var(--text);margin-bottom:20px">${u.detail}</div>
+    ${u.messages > 0 ? `
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px">
+      <div class="user-stat"><div class="user-stat-val">${u.sessions}</div><div class="user-stat-lbl">Сессии</div></div>
+      <div class="user-stat"><div class="user-stat-val">${u.messages}</div><div class="user-stat-lbl">Сообщения</div></div>
+      <div class="user-stat"><div class="user-stat-val">${u.duration}</div><div class="user-stat-lbl">Длительность</div></div>
+      <div class="user-stat"><div class="user-stat-val">${u.avgUserLen}</div><div class="user-stat-lbl">Сред. симв. юзера</div></div>
+      <div class="user-stat"><div class="user-stat-val">${u.avgBotLen}</div><div class="user-stat-lbl">Сред. симв. бота</div></div>
+      <div class="user-stat"><div class="user-stat-val">${u.replyTime || '—'}с</div><div class="user-stat-lbl">Ответ юзера</div></div>
+    </div>` : ''}
+    <div class="user-insight" style="margin-bottom:16px">${u.insight}</div>
+    ${u.grow.length ? `
+    <div class="section-title">Прогресс GROW</div>
+    <table class="grow-table" style="margin-bottom:0">
+      <thead><tr><th>Сессия</th><th>К</th><th>G</th><th>R</th><th>O</th><th>W</th></tr></thead>
+      <tbody>${u.grow.map(g => {
+        const cell = v => v === 'yes' ? '<td class="grow-yes">&#10003;</td>' : v === 'partial' ? '<td class="grow-partial">~</td>' : '<td class="grow-no">&middot;</td>';
+        return `<tr><td>${g.s}</td>${cell(g.c)}${cell(g.g)}${cell(g.r)}${cell(g.o)}${cell(g.w)}</tr>`;
+      }).join('')}</tbody>
+    </table>` : ''}
+  `;
+  document.getElementById('detail-overlay').classList.add('visible');
+}
+
+function closeDetail() {
+  document.getElementById('detail-overlay').classList.remove('visible');
+}
+
+document.getElementById('detail-overlay').addEventListener('click', function(e) {
+  if (e.target === this) closeDetail();
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDetail(); });
+
+// --- Init ---
+renderFunnel();
+renderHours();
+renderDaily();
+renderTopics();
+renderUsers();
+renderBarChart('reply-times', DATA.replyTimes, 200);
+renderBarChart('msg-lengths', DATA.msgLengths, 300);
+renderGrow();
+renderBotPatterns();
+renderQuality();
+renderImplications();
+</script>
+</body>
+</html>
