@@ -65,6 +65,22 @@
   }
   .intro b { color: var(--text); font-weight: 600; }
 
+  /* Pagenav inside header */
+  nav.pagenav { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  .pagenav-item {
+    padding: 5px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-muted);
+    text-decoration: none;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    transition: all 0.15s;
+  }
+  .pagenav-item:hover { border-color: var(--border-strong); background: var(--surface-2); color: var(--text); }
+  .pagenav-item.active { background: var(--accent); color: white; border-color: var(--accent); }
+
   /* Filters */
   .filters {
     padding: 12px 24px;
@@ -451,8 +467,13 @@
     <h1 id="title">AJTBD — Граф работ фаундера</h1>
     <span class="sub" id="subtitle">«Второй взгляд» + квартальный контракт</span>
   </div>
+  <nav class="pagenav" aria-label="Отчёты">
+    <a href="../dashboard.html" class="pagenav-item">Бот-аналитика</a>
+    <a href="../research.html" class="pagenav-item">Исследование рынка</a>
+    <a href="./" class="pagenav-item active">Граф работ</a>
+  </nav>
   <div class="meta">
-    <strong>Обновлено:</strong> <span id="updated">—</span> · источник: <code style="font-size:11px">ajtbd-analysis.md</code>
+    <strong>Обновлено:</strong> <span id="updated">—</span>
   </div>
 </header>
 

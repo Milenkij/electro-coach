@@ -113,6 +113,17 @@ header.top {
 .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
 @media (max-width: 768px) { .grid-2 { grid-template-columns: 1fr; } .card-grid { grid-template-columns: 1fr; } .bar-row { grid-template-columns: 100px 1fr 50px; } }
 
+/* Pagenav inside header */
+nav.pagenav { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.pagenav-item {
+  padding: 5px 12px; border-radius: 999px; font-size: 12px; font-weight: 500;
+  color: var(--text-muted); text-decoration: none;
+  border: 1px solid var(--border); background: var(--surface);
+  transition: all 0.15s;
+}
+.pagenav-item:hover { border-color: var(--border-strong); background: var(--surface-2); color: var(--text); }
+.pagenav-item.active { background: var(--accent); color: white; border-color: var(--accent); }
+
 /* Priority list */
 .pri-list { display: flex; flex-direction: column; gap: 8px; }
 .pri-item { display: grid; grid-template-columns: 32px 1fr auto; align-items: center; gap: 12px; padding: 10px 14px; background: var(--surface-2); border-radius: var(--radius); }
@@ -128,9 +139,14 @@ header.top {
     <h1>ElectroCoach — Исследование рынка</h1>
     <span class="sub">AJTBD + Конкуренты + Тренды + Стратегия отстройки</span>
   </div>
+  <nav class="pagenav" aria-label="Отчёты">
+    <a href="dashboard.html" class="pagenav-item">Бот-аналитика</a>
+    <a href="research.html" class="pagenav-item active">Исследование рынка</a>
+    <a href="ajtbd-graph/" class="pagenav-item">Граф работ</a>
+  </nav>
   <div class="meta">
-    <strong>Дата:</strong> 17.04.2026 &nbsp;|&nbsp;
-    <strong>Источники:</strong> Production DB, WebSearch, AJTBD-методология
+    <strong>Обновлено:</strong> 19.04.2026 &nbsp;|&nbsp;
+    <strong>Источники:</strong> prod DB + WebSearch
   </div>
 </header>
 
@@ -311,6 +327,7 @@ header.top {
           <tr><td>Доступен 23:00+</td><td>✅</td><td>✅</td><td>✅</td><td>❌</td><td style="color:var(--accent);font-weight:600">✅</td></tr>
           <tr><td>Сессионная структура</td><td>❌</td><td>❌</td><td>❌</td><td>✅</td><td style="color:var(--accent);font-weight:600">✅</td></tr>
           <tr><td>Фоллоу-ап после сессии</td><td>❌</td><td>❌</td><td>❌</td><td>⚠️</td><td style="color:var(--danger)">❌ гэп!</td></tr>
+          <tr><td>Парная/совместная рефлексия</td><td>❌</td><td>❌</td><td>❌</td><td>❌</td><td style="color:var(--accent);font-weight:600">✅ уникально (10/10)</td></tr>
         </tbody>
       </table>
     </div>
@@ -319,8 +336,13 @@ header.top {
       <div class="section-title">Точки создания ценности</div>
       <div class="card-grid">
         <div class="card" style="border-left:3px solid var(--accent)">
+          <div class="card-head"><div class="card-title">Парная рефлексия (2 чел.)</div><span class="badge b-accent">новый дифференциатор</span></div>
+          <div class="card-body"><strong>Данные 17 апр:</strong> пара Ярослав + Алексей — 77 сообщений, 1 ч 51 мин, оценка 10/10 (рекорд). 0 конкурентов предлагают структурированную парную рефлексию. Рынок: пары/партнёры/со-фаундеры, семейные терапевты — стоят 5–10K/сессия. <strong>Гипотеза:</strong> отдельный сценарий «совместная рефлексия» может быть хитом продукта.</div>
+          <div class="card-footer"><span class="badge b-accent">механика: больше работ</span><span class="badge b-blue">эксперимент</span></div>
+        </div>
+        <div class="card" style="border-left:3px solid var(--accent)">
           <div class="card-head"><div class="card-title">Конкретный блокер через Дилтс</div><span class="badge b-accent">дифференциатор</span></div>
-          <div class="card-body">Все конкуренты ❌. Систематический проход по уровням: окружение → поведение → способности → убеждения → идентичность. Уже работает: «мало зарабатываю = мало стою» (Alexey), «отношение к себе» (Лера).</div>
+          <div class="card-body">Все конкуренты ❌. Систематический проход по уровням: окружение → поведение → способности → убеждения → идентичность. Уже работает: «мало зарабатываю = мало стою» (Alexey), «отношение к себе» (Лера), «ядро = спокойствие» (Надежда).</div>
           <div class="card-footer"><span class="badge b-blue">механика: дать ясность</span></div>
         </div>
         <div class="card" style="border-left:3px solid var(--accent)">
@@ -329,14 +351,19 @@ header.top {
           <div class="card-footer"><span class="badge b-blue">механика: забрать работу</span></div>
         </div>
         <div class="card" style="border-left:3px solid var(--blue)">
-          <div class="card-head"><div class="card-title">Бизнес-контекст</div><span class="badge b-blue">уникальный</span></div>
-          <div class="card-body">0 AI-ботов на русском работают с бизнес-решениями. Анастасия: 9/10. Бот переключился в режим консультанта — и это сработало. Нужно осознанно поддержать.</div>
+          <div class="card-head"><div class="card-title">Бизнес-контекст + Planning</div><span class="badge b-blue">уникальный</span></div>
+          <div class="card-body">0 AI-ботов на русском работают с бизнес-решениями и стратегией жизни. Анастасия (бизнес): 9/10. Надежда (5-летний план): 48 сообщений, активна. Бот переключается в режим структурированного мышления — и это работает.</div>
           <div class="card-footer"><span class="badge b-blue">механика: больше работ</span></div>
         </div>
         <div class="card" style="border-left:3px solid var(--warn)">
           <div class="card-head"><div class="card-title">«Один шаг» вместо 9 вариантов</div><span class="badge b-warn">must-fix</span></div>
           <div class="card-body">Главный гэп бота. Alexey: «Никакой, сложно оочень» на 9 вариантов. Нужно: max 3 → юзер выбирает → бот сужает до одного первого шага, не вызывающего сопротивления.</div>
           <div class="card-footer"><span class="badge b-warn">механика: сократить время</span></div>
+        </div>
+        <div class="card" style="border-left:3px solid var(--danger)">
+          <div class="card-head"><div class="card-title">Онбординг — хук первого сообщения</div><span class="badge b-danger">must-fix</span></div>
+          <div class="card-body"><strong>30% новых юзеров молчат</strong> после /start (Insaf, Yar, Тимофей). Регистрируются и не пишут ни одного слова. Гипотеза: /start должен сразу задать первый вопрос («Что сейчас на уме?»), а не давать приветствие без хука.</div>
+          <div class="card-footer"><span class="badge b-danger">механика: сократить время</span></div>
         </div>
       </div>
     </div>
@@ -347,7 +374,12 @@ header.top {
     </div>
 
     <div class="section">
-      <div class="section-title">Позиционирование (3 варианта)</div>
+      <div class="section-title">Гипотезы для валидации (на данных прод-бота)</div>
+      <div class="card-grid" id="hypotheses"></div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Позиционирование (4 варианта)</div>
       <div id="positioning"></div>
     </div>
 
@@ -410,12 +442,60 @@ const COMPETITORS = [
 ];
 
 const FEATURES = [
-  { num: 1, title: '«Один шаг» вместо 9 вариантов', desc: 'Max 3 → выбор → один первый шаг', type: 'Must-have', color: 'var(--danger)' },
-  { num: 2, title: 'Разнообразие рефлексий', desc: '8+ паттернов вместо «Я правильно понял?»', type: 'Must-have', color: 'var(--danger)' },
-  { num: 3, title: 'Определение пола по имени', desc: 'Корректные грамматические формы', type: 'Must-have', color: 'var(--warn)' },
-  { num: 4, title: 'Закрытие сессии + фоллоу-ап', desc: 'Auto-prompt + напоминание через 24ч', type: 'Must-have', color: 'var(--warn)' },
-  { num: 5, title: 'Бизнес-режим', desc: 'Автодетект запроса → структурированный анализ', type: 'Дифференциатор', color: 'var(--blue)' },
-  { num: 6, title: 'Дилтс-диагностика (усиление)', desc: 'Явно называть уровень блокера юзеру', type: 'Дифференциатор', color: 'var(--blue)' },
+  { num: 1, title: 'Хук первого сообщения (/start)', desc: 'Первый вопрос сразу после регистрации. Фикс молчуна-онбординга (30%)', type: 'Must-have', color: 'var(--danger)' },
+  { num: 2, title: '«Один шаг» вместо 9 вариантов', desc: 'Max 3 → выбор → один первый шаг', type: 'Must-have', color: 'var(--danger)' },
+  { num: 3, title: 'Закрытие сессии + фоллоу-ап', desc: 'Auto-prompt + напоминание через 24ч. 67% сессий висят', type: 'Must-have', color: 'var(--danger)' },
+  { num: 4, title: 'Разнообразие рефлексий', desc: '8+ паттернов вместо «Я правильно понял?» (34%)', type: 'Must-have', color: 'var(--warn)' },
+  { num: 5, title: 'Определение пола по имени', desc: 'Корректные грамматические формы', type: 'Must-have', color: 'var(--warn)' },
+  { num: 6, title: 'Парный формат (2 чел.)', desc: 'Отдельный сценарий: пара/партнёр/со-фаундер. Рекорд 10/10 и 77 сообщений', type: 'Дифференциатор', color: 'var(--accent)' },
+  { num: 7, title: 'Planning-шаблон', desc: '5-летний план / стратегия жизни. Надежда: 48 сообщений, активна', type: 'Дифференциатор', color: 'var(--accent)' },
+  { num: 8, title: 'Бизнес-режим', desc: 'Автодетект запроса → структурированный анализ', type: 'Дифференциатор', color: 'var(--blue)' },
+  { num: 9, title: 'Дилтс-диагностика (усиление)', desc: 'Явно называть уровень блокера юзеру', type: 'Дифференциатор', color: 'var(--blue)' },
+];
+
+const HYPOTHESES = [
+  {
+    title: 'H1: Парный формат = хит продукта',
+    status: 'сильный сигнал',
+    color: 'var(--accent)',
+    evidence: 'Ярослав + Алексей (17 апр): 77 сообщений, 1 ч 51 мин, оценка 10/10 — рекорд бота. 0 конкурентов предлагают парную рефлексию.',
+    validate: 'Раскатать отдельный сценарий «Для пары». Таргет: 10 парных сессий → средняя оценка ≥ 8, вовлечённость ≥ 40 сообщений. Сегменты: пары, партнёры, со-фаундеры.'
+  },
+  {
+    title: 'H2: Хук /start убирает 30% отвал',
+    status: 'требует A/B',
+    color: 'var(--danger)',
+    evidence: '3 из 10 пользователей (Insaf, Yar, Тимофей) зарегались и не написали ни одного сообщения. /start даёт приветствие без вопроса — нет триггера ответа.',
+    validate: 'A/B: приветствие с вопросом vs без. Метрика: конверсия /start → первое сообщение. Текущее 70%, таргет 90%+.'
+  },
+  {
+    title: 'H3: Planning-сценарий работает',
+    status: 'надо повторить',
+    color: 'var(--blue)',
+    evidence: 'Надежда (18 апр): запрос «разобрать цели/планы на жизнь», 48 сообщений, сессия активна, бот дошёл до ядра ценностей («спокойствие + безмятежность + свобода»). Сильная работа с Goal.',
+    validate: 'Добавить template «5-летний план / стратегия жизни». Таргет: 10 planning-сессий → средняя оценка ≥ 8, доведение до Options ≥ 50%.'
+  },
+  {
+    title: 'H4: Группы 3+ требуют другого режима',
+    status: 'подтверждено',
+    color: 'var(--warn)',
+    evidence: 'Alexey с 4 участниками (17 апр): 4 минуты, 2 сообщения, оценка 1/10. Коуч-режим не держит внимание 4 человек одновременно.',
+    validate: 'Отдельный промпт «фасилитатор» для групп 3+: структурирование, круговые вопросы, таймкипинг. Или ограничение до 2 участников.'
+  },
+  {
+    title: 'H5: «Один первый шаг» снимает сопротивление',
+    status: 'требует теста',
+    color: 'var(--warn)',
+    evidence: 'Alexey на 9 вариантов: «Никакой, сложно оочень». Выбор парализует. 67% сессий не завершаются (нет Will).',
+    validate: 'Max 3 варианта → ещё один виток вопроса → один конкретный шаг. Метрика: % сессий, достигших этапа Will.'
+  },
+  {
+    title: 'H6: Закрытие + фоллоу-ап поднимает оценку',
+    status: 'требует теста',
+    color: 'var(--text-dim)',
+    evidence: '10 из 15 сессий «висят» без оценки. Из них 3 длинные (48, 24, 23 сообщений) без /stop. Оценки собираем только при явном закрытии.',
+    validate: 'Авто-напоминание закрыть через 24ч тишины + follow-up на 3-й день. Метрика: % сессий с оценкой ≥ 60%.'
+  },
 ];
 
 const POSITIONS = [
@@ -439,6 +519,13 @@ const POSITIONS = [
     want: 'Хочу разговор, который помогает думать — про бизнес, про себя, про решения — без записи, без стыда, в любое время',
     so: 'Чтобы принимать решения быстрее и не выгорать в одиночку',
     product: 'ElectroCoach — AI-коуч для предпринимателей в Telegram. Работает когда психолог спит, стоит дешевле одной сессии, не даёт советов — помогает думать.'
+  },
+  {
+    label: 'Фокус на парную рефлексию (новое)',
+    when: 'Когда надо обсудить важное с партнёром/со-фаундером/парой — про совместные цели, конфликты, решения — но разговор сам по себе буксует или срывается в эмоции',
+    want: 'Хочу структурированный диалог втроём: мы вдвоём + нейтральный фасилитатор, который задаёт правильные вопросы и не даёт свернуть',
+    so: 'Чтобы договориться и выйти с одним совместным шагом, а не с ещё одной ссорой или нерешённым вопросом',
+    product: 'ElectroCoach — парный режим для пар, партнёров и со-фаундеров. В 2 раза дешевле семейного терапевта, доступен из любого чата, доводит до конкретного шага.'
   }
 ];
 
@@ -485,6 +572,19 @@ function renderFeatures() {
   `).join('');
 }
 
+function renderHypotheses() {
+  document.getElementById('hypotheses').innerHTML = HYPOTHESES.map(h => `
+    <div class="card" style="border-left:3px solid ${h.color}">
+      <div class="card-head">
+        <div class="card-title">${h.title}</div>
+        <span class="badge" style="background:${h.color}20;color:${h.color}">${h.status}</span>
+      </div>
+      <div class="card-body" style="margin-bottom:8px"><strong>Сигнал:</strong> ${h.evidence}</div>
+      <div class="card-body" style="color:var(--text)"><strong>Валидация:</strong> ${h.validate}</div>
+    </div>
+  `).join('');
+}
+
 function renderPositioning() {
   document.getElementById('positioning').innerHTML = POSITIONS.map((p, i) => `
     <div class="pos-card">
@@ -509,6 +609,7 @@ function showTab(id) {
 renderSegments();
 renderCompetitors();
 renderFeatures();
+renderHypotheses();
 renderPositioning();
 </script>
 </body>
