@@ -1,0 +1,26 @@
+# Template for runs/<run-id>/meta.yml
+# Copy into new run and fill in.
+
+id: run-N-<slug>                       # например: run-3-founder-coach
+name: "<Читаемое название рана>"
+pipeline_version: v1
+status: active                          # active | frozen | archived
+started_at: YYYY-MM-DD
+frozen_at: null                         # null пока active, дата когда заморожен
+owner: <email>
+team:                                   # список id участников рана (email local-part или slug)
+  - <founder-1>
+parent_run: null                        # id другого рана или null
+hypothesis: >
+  Одно-два предложения гипотезы этого рана.
+segments_target: []                     # slug'и сегментов, на которых фокусируется ран
+mvp_artifact:
+  kind: null                            # telegram-bot | web-app | landing | service | null
+  path: null                            # путь к артефакту (/bot, /runs/.../stages/7-mvp/results/...)
+  deploy: null                          # путь к CI-workflow или null
+current_stage: 0-team-constitution      # текущая активная стадия
+stage_0_status: in-progress             # in-progress | signed | historical-gap
+constitution_artifact: null             # путь к constitution.md после подписания Stage 0
+knowledge_moc: ./MOC.md
+notes: |
+  Свободная заметка о ране.
