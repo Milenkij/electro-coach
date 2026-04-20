@@ -2,6 +2,14 @@
 
 Этот файл описывает роли и команды AI-агентов для работы над проектом ElectroCoach по методологии Spec-Driven Development.
 
+## Место бота в архитектуре проекта
+
+Этот бот — **MVP-артефакт `runs/run-1-electrocoach-v1/`**. Контекст рана: [`/runs/run-1-electrocoach-v1/meta.yml`](../runs/run-1-electrocoach-v1/meta.yml) и [`MOC.md`](../runs/run-1-electrocoach-v1/MOC.md).
+
+Папка `/bot/` живёт в корне репозитория **по CI-контракту** (GitHub Actions триггерится на путь `bot/**`), см. [`/knowledge/decisions/bot-stays-at-root.md`](../knowledge/decisions/bot-stays-at-root.md). Это единственное исключение из правила «артефакты — внутри ранов».
+
+**Если `runs/run-3-founder-coach/` (или следующий ран) решит собирать собственного бота** — код пойдёт в `runs/<run>/stages/7-mvp/`, а не в корень. Общая архитектура репозитория описана в [корневом AGENTS.md](../AGENTS.md).
+
 ## Контекст проекта
 
 Агент ВСЕГДА читает перед работой:
