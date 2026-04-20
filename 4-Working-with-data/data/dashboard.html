@@ -272,28 +272,55 @@
     color: var(--text-muted);
   }
 
-  /* Topic tags */
-  .topic-cloud { display: flex; flex-wrap: wrap; gap: 8px; }
-  .topic-tag {
-    padding: 6px 14px;
-    border-radius: 999px;
-    font-size: 12px;
-    font-weight: 500;
+  /* Requests list */
+  .requests-list { display: flex; flex-direction: column; gap: 10px; }
+  .request-item {
     border: 1px solid var(--border);
+    border-left: 3px solid var(--blue);
+    border-radius: var(--radius);
+    padding: 12px 14px;
     background: var(--surface);
-    color: var(--text-muted);
-    position: relative;
   }
-  .topic-count {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    background: var(--accent);
-    color: white;
-    border-radius: 999px;
-    padding: 1px 6px;
-    margin-left: 6px;
+  .request-item.rating-high { border-left-color: var(--accent); }
+  .request-item.rating-low { border-left-color: var(--danger); }
+  .request-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+    flex-wrap: wrap;
+  }
+  .request-user {
     font-weight: 600;
+    font-size: 13px;
   }
+  .request-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .request-text {
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.55;
+    white-space: pre-wrap;
+  }
+  .request-format-badge {
+    display: inline-block;
+    font-size: 10px;
+    padding: 1px 7px;
+    border-radius: 999px;
+    font-weight: 500;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+  .fmt-solo { background: var(--blue-soft); color: #1e40af; }
+  .fmt-pair { background: var(--accent-soft); color: var(--accent); }
+  .fmt-group { background: var(--warn-soft); color: #9a3412; }
 
   /* GROW progress */
   .grow-table { width: 100%; border-collapse: collapse; font-size: 12px; }
@@ -487,12 +514,12 @@
       <div class="kpi-note">14 соло + 3 групп</div>
     </div>
     <div class="kpi">
-      <div class="kpi-value" style="color:var(--text)">434</div>
+      <div class="kpi-value" style="color:var(--text)">440</div>
       <div class="kpi-label">Сообщения</div>
-      <div class="kpi-note">220 юзер / 214 бот</div>
+      <div class="kpi-note">223 юзер / 217 бот</div>
     </div>
     <div class="kpi">
-      <div class="kpi-value" style="color:var(--warn)">25.5</div>
+      <div class="kpi-value" style="color:var(--warn)">25.9</div>
       <div class="kpi-label">Сред. сообщ./сессию</div>
       <div class="kpi-note">разброс 2–77 (макс у парных)</div>
     </div>
@@ -551,11 +578,12 @@
     <div class="insight" style="padding:12px 16px;background:var(--accent-soft);border-radius:var(--radius);border-left:3px solid var(--accent);font-size:13px;color:var(--text-muted);line-height:1.6;margin-top:10px"><strong style="color:var(--text)">Гипотеза подтверждается:</strong> парный формат (2 чел.) — отдельный сценарий продукта. 2 из 2 парных = 10/10, средняя длина 76.5 сообщ. Ни одна соло-сессия не дотянула до этого уровня. Группы 3+ требуют пересмотра роли бота (фасилитатор, а не коуч).</div>
   </div>
 
-  <!-- Topic Clustering -->
+  <!-- Requests (full list) -->
   <div class="section">
-    <div class="section-title">Темы запросов</div>
-    <div class="topic-cloud" id="topics"></div>
-    <div style="margin-top:16px">
+    <div class="section-title">Запросы пользователей (все сессии с сообщениями)</div>
+    <div class="requests-list" id="requests-list"></div>
+
+    <div style="margin-top:20px">
       <div class="section-title" style="margin-bottom:10px">Поверхностная проблема &rarr; Настоящая проблема</div>
       <div class="bar-chart">
         <div class="pattern-card" style="border-left:3px solid var(--blue)">
@@ -698,15 +726,35 @@ const DATA = {
     { d: '18 апр', users: 1, sessions: 1 },
     { d: '20 апр', users: 1, sessions: 2 },
   ],
-  topics: [
-    { name: 'Деньги / доход', count: 3, color: 'var(--accent)' },
-    { name: 'Самоценность / идентичность', count: 3, color: 'var(--blue)' },
-    { name: 'Тревога / эмоции', count: 3, color: 'var(--warn)' },
-    { name: '5-летний план / цели', count: 1, color: '#0891b2' },
-    { name: 'Отношения / горе', count: 1, color: '#e11d48' },
-    { name: 'Бизнес-решение', count: 1, color: 'var(--gray)' },
-    { name: 'Бессонница', count: 1, color: '#7c3aed' },
-    { name: 'Парная рефлексия', count: 1, color: 'var(--accent)' },
+  requests: [
+    { user: 'Кирилл', date: '13 апр', msgs: 2, rating: 1, format: 'solo',
+      text: 'хочу понять как денег хаработать' },
+    { user: 'Кирилл', date: '13 апр', msgs: 50, rating: null, format: 'solo',
+      text: 'хочу денег много' },
+    { user: 'Alexey', date: '13 апр', msgs: 32, rating: 10, format: 'solo',
+      text: 'Как уснуть бы побыстрее' },
+    { user: 'Alexey', date: '14 апр', msgs: 46, rating: 7, format: 'solo',
+      text: 'Даже не знаю' },
+    { user: 'Alexey', date: '14 апр', msgs: 6, rating: 10, format: 'solo',
+      text: 'Даже не знаю' },
+    { user: 'Анастасия', date: '14 апр', msgs: 23, rating: null, format: 'solo',
+      text: 'Я произвожу пробиотики. Продаем в основном b2c — 85–90%. Сейчас пришёл клиент и спрашивает под СТМ или кобрендинг условия. Я до конца не понимаю, есть ли разница для нас' },
+    { user: 'Glebch', date: '14 апр', msgs: 12, rating: null, format: 'solo',
+      text: 'нужно собраться с силами и пройти трудный этап в бизнесе и личной жизни' },
+    { user: 'Лера', date: '16 апр', msgs: 18, rating: null, format: 'solo',
+      text: 'хочу разобраться со своим состоянием' },
+    { user: 'darik', date: '16 апр', msgs: 24, rating: null, format: 'solo',
+      text: 'Недавно закончились отношения с парнем, который казался идеальным во всём: включал меня в свою жизнь, обожал и уважал, говорила совместных планах на будущее. Все закончилось как-то глупо: сначала мы поругались из-за какой-то мелочи, а после попыток помириться, он сказал, что любит, но не хочет больше пытаться. Я буквально не знаю куда себя деть, потому что кажется, что всё не может закончиться так просто. В моей картине мира, если у двух людей есть чувства друг другу, то за это нужно бороться. Но я уже не знаю, что могу сделать со своей стороны.' },
+    { user: 'Alexey + 3 чел.', date: '17 апр', msgs: 2, rating: 1, format: 'group',
+      text: 'Кому отвечать?' },
+    { user: 'Alexey + Ярослав (пара)', date: '17 апр', msgs: 77, rating: 10, format: 'pair',
+      text: 'У нас еженедельная регулярная встреча форум-группы, и вообще нас четверо должно быть. Но сегодня пришли двое, и я до конца не понимаю цели и задач нашей форум-группы.\n\nОсобенно когда двое участников на нее не приходят, я начинаю вообще не понимать. Скорее всего, есть какая-то другая важность у ребят, и поэтому они не приходят.\n\nМеня особенно расстраивает то, что я сильно расчищаю календарь для того, чтобы эта встреча состоялась, а вот двое не пришли, и сегодня нас здесь двое.\n\nУ нас нет какого-то развития, встретились, обсудили как дела, в это есть ценность как общаться с близкими людьми. Это сейчас про дела, а не про эмоциональную историю. Либо дела поделать, либо на нашу встречу прийти.\n\nПрояснить хочется: мне кажется, что ожидания от форум-группы у всех разные. И это смущает. Хватает ли всем? И что делать, если не хватает?' },
+    { user: 'Надежда', date: '18 апр', msgs: 48, rating: null, format: 'solo',
+      text: 'Я хочу разобрать цели в жизни! Или планы на жизнь' },
+    { user: 'Alexey + Кирилл (пара)', date: '20 апр', msgs: 76, rating: 10, format: 'pair',
+      text: 'Мы вместе с Кириллом ровно неделю назад захотели зайти в продуктовое обучение, чтобы научиться быстро запускать продукты, тестировать гипотезы, приводящие нас к финансовому результату.\n\nЕсли я не ошибаюсь, мы целились в то, чтобы за одну неделю понять, что хотим сделать: сделать, вывести на рынок, как-то проверить данные, удостовериться, движемся ли мы в метриках или нет, и обучиться этому.\n\nМы планировали двигаться такими недельными итерациями. Одна неделя у нас прошла. Прошла ли у нас одна итерация? Не знаю. Но одна неделя точно прошла, и вот мы пришли через семь дней, чтобы понять, где мы, в чем мы и что делать дальше.' },
+    { user: 'Посуточно квартиры', date: '20 апр', msgs: 24, rating: null, format: 'solo',
+      text: 'Отношения личные' },
   ],
   users: [
     {
@@ -821,12 +869,12 @@ const DATA = {
     },
     {
       name: 'Посуточно квартиры', handle: '@sutkipiter2030', registered: '20 апр',
-      sessions: 1, messages: 18, duration: 'активна', avgUserLen: '—', avgBotLen: '—',
+      sessions: 1, messages: 24, duration: 'активна', avgUserLen: '—', avgBotLen: '—',
       replyTime: null, botReply: null, score: null, risk: 'churned',
-      topic: 'Подозрение на спам/промо-аккаунт (нейминг «Посуточно квартиры»)',
-      insight: 'Аккаунт с коммерческим названием (посуточная аренда, СПб). Написал 18 сообщений, но нейминг и handle указывают на промо/спам. Первый нецелевой пользователь — сигнал о необходимости фильтрации или верификации.',
+      topic: 'Запрос «отношения личные» — аккаунт с коммерческим неймингом',
+      insight: 'Первое сообщение — <q>Отношения личные</q>. Но имя «Посуточно квартиры» и handle @sutkipiter2030 указывают на промо-аккаунт (посуточная аренда в СПб). 24 сообщ., активна. Либо реальный пользователь с рабочего аккаунта, либо спам — нужна фильтрация.',
       grow: [],
-      detail: 'Зарегистрирован 20 апр. Имя «Посуточно квартиры», username @sutkipiter2030 — явно не частное лицо, а коммерческий/промо-аккаунт (посуточная аренда в СПб). 18 сообщений, сессия активна. Это первый нецелевой пользователь за всё время. Вопрос к продукту: нужна ли модерация на входе, либо блокировка аккаунтов с business-неймингом, либо отдельная обработка таких кейсов.'
+      detail: 'Зарегистрирован 20 апр. Имя «Посуточно квартиры», username @sutkipiter2030 — похоже на коммерческий/промо-аккаунт. Запрос при этом — «Отношения личные», 24 сообщений, сессия активна. Возможно, владелец бизнес-аккаунта пишет с него про своё личное. Вопрос к продукту: нужна ли модерация на входе, либо блокировка аккаунтов с business-неймингом, либо отдельная обработка таких кейсов.'
     },
   ],
   replyTimes: [
@@ -926,11 +974,23 @@ function renderDaily() {
   }).join('');
 }
 
-function renderTopics() {
-  const el = document.getElementById('topics');
-  el.innerHTML = DATA.topics.map(t =>
-    `<span class="topic-tag" style="border-color:${t.color}">${t.name}<span class="topic-count" style="background:${t.color}">${t.count}</span></span>`
-  ).join('');
+function renderRequests() {
+  const el = document.getElementById('requests-list');
+  const fmtLabel = { solo: 'соло', pair: 'пара', group: 'группа 4' };
+  const escapeHtml = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  el.innerHTML = DATA.requests.map(r => {
+    const cls = r.rating === 10 ? 'rating-high' : r.rating === 1 ? 'rating-low' : '';
+    const rating = r.rating !== null
+      ? `<span style="color:${r.rating >= 8 ? 'var(--accent)' : r.rating >= 5 ? 'var(--warn)' : 'var(--danger)'};font-weight:600">${r.rating}/10</span>`
+      : '<span style="color:var(--text-dim)">без оценки</span>';
+    return `<div class="request-item ${cls}">
+      <div class="request-head">
+        <span class="request-user">${r.user}<span class="request-format-badge fmt-${r.format}">${fmtLabel[r.format]}</span></span>
+        <span class="request-meta"><span>${r.date}</span><span>${r.msgs} сообщ.</span>${rating}</span>
+      </div>
+      <div class="request-text">${escapeHtml(r.text)}</div>
+    </div>`;
+  }).join('');
 }
 
 function renderUsers() {
@@ -1086,7 +1146,7 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDetail(
 renderFunnel();
 renderHours();
 renderDaily();
-renderTopics();
+renderRequests();
 renderUsers();
 renderBarChart('reply-times', DATA.replyTimes, 200);
 renderBarChart('msg-lengths', DATA.msgLengths, 300);
