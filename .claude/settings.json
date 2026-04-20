@@ -1,0 +1,43 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git -C /Users/kirillmilenkij/Documents/ElectroCoach status:*)",
+      "Bash(git -C /Users/kirillmilenkij/Documents/ElectroCoach diff:*)",
+      "Bash(git -C /Users/kirillmilenkij/Documents/ElectroCoach log:*)",
+      "Bash(git -C /Users/kirillmilenkij/Documents/ElectroCoach branch:*)",
+      "Bash(git -C /Users/kirillmilenkij/Documents/ElectroCoach show:*)",
+      "Bash(git -C /Users/kirillmilenkij/Documents/ElectroCoach grep:*)",
+      "Bash(git -C /Users/kirillmilenkij/Documents/ElectroCoach add:*)",
+      "Bash(git -C /Users/kirillmilenkij/Documents/ElectroCoach rm:*)",
+      "Bash(git -C /Users/kirillmilenkij/Documents/ElectroCoach mv:*)",
+      "Bash(git -C /Users/kirillmilenkij/Documents/ElectroCoach commit:*)",
+      "Bash(git -C /Users/kirillmilenkij/Documents/ElectroCoach tag:*)",
+      "Bash(git -C /Users/kirillmilenkij/Documents/ElectroCoach checkout:*)",
+      "Bash(git -C /Users/kirillmilenkij/Documents/ElectroCoach restore:*)",
+      "Bash(git -C /Users/kirillmilenkij/Documents/ElectroCoach reset:*)",
+      "Bash(git -C /Users/kirillmilenkij/Documents/ElectroCoach stash:*)",
+      "Bash(git -C /Users/kirillmilenkij/Documents/ElectroCoach ls-files naming/)",
+      "Bash(git -C /Users/kirillmilenkij/Documents/ElectroCoach ls-files \"2-3-MVP B2B\" \"ajtbd-graph\")",
+      "Bash(git mv *)",
+      "Bash(git -C /Users/kirillmilenkij/Documents/ElectroCoach ls-files 1-Setting-up 5-Automation 6-Vibe-coding)",
+      "Bash(git fetch *)",
+      "Bash(git push origin *:*)",
+      "Bash(git push -u origin *:*)",
+      "Bash(git stash *)",
+      "Bash(git checkout *)",
+      "Bash(git pull *)",
+      "Bash(brctl download *)",
+      "Bash(git reset *)"
+    ],
+    "deny": [
+      "Bash(git push --force*:*)",
+      "Bash(git push --force-with-lease*:*)",
+      "Bash(git push origin main*:*)",
+      "Bash(git push origin master*:*)",
+      "Bash(git push * main*:*)",
+      "Bash(git push * master*:*)",
+      "Bash(git push --tags*:*)",
+      "Bash(git push origin refs/tags/*:*)"
+    ]
+  }
+}
