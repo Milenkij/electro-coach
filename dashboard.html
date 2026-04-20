@@ -272,30 +272,28 @@
     color: var(--text-muted);
   }
 
-  /* Requests list */
-  .requests-list { display: flex; flex-direction: column; gap: 10px; }
-  .request-item {
+  /* Surface → Real problem list */
+  .problems-list { display: flex; flex-direction: column; gap: 10px; }
+  .problem-item {
     border: 1px solid var(--border);
     border-left: 3px solid var(--blue);
     border-radius: var(--radius);
     padding: 12px 14px;
     background: var(--surface);
   }
-  .request-item.rating-high { border-left-color: var(--accent); }
-  .request-item.rating-low { border-left-color: var(--danger); }
-  .request-head {
+  .problem-item.rating-high { border-left-color: var(--accent); }
+  .problem-item.rating-low { border-left-color: var(--danger); }
+  .problem-item.stuck { border-left-color: var(--text-dim); opacity: 0.82; }
+  .problem-head {
     display: flex;
     justify-content: space-between;
     align-items: center;
     gap: 10px;
-    margin-bottom: 6px;
+    margin-bottom: 8px;
     flex-wrap: wrap;
   }
-  .request-user {
-    font-weight: 600;
-    font-size: 13px;
-  }
-  .request-meta {
+  .problem-user { font-weight: 600; font-size: 13px; }
+  .problem-meta {
     font-family: 'JetBrains Mono', monospace;
     font-size: 11px;
     color: var(--text-dim);
@@ -303,13 +301,39 @@
     gap: 10px;
     flex-wrap: wrap;
   }
-  .request-text {
+  .problem-flow {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 10px;
+    align-items: start;
     font-size: 13px;
-    color: var(--text);
-    line-height: 1.55;
-    white-space: pre-wrap;
+    line-height: 1.5;
   }
-  .request-format-badge {
+  @media (max-width: 640px) {
+    .problem-flow { grid-template-columns: 1fr; }
+    .problem-flow .arrow { transform: rotate(90deg); justify-self: start; }
+  }
+  .problem-flow .surface {
+    color: var(--text-dim);
+    font-style: italic;
+    padding: 6px 10px;
+    background: var(--surface-2);
+    border-radius: 6px;
+  }
+  .problem-flow .arrow {
+    color: var(--text-dim);
+    font-weight: 600;
+    padding: 6px 4px;
+  }
+  .problem-flow .real {
+    color: var(--text);
+    font-weight: 500;
+    padding: 6px 10px;
+    background: var(--accent-soft);
+    border-radius: 6px;
+  }
+  .problem-flow .real.stuck { background: var(--surface-2); color: var(--text-muted); font-weight: 400; }
+  .problem-format-badge {
     display: inline-block;
     font-size: 10px;
     padding: 1px 7px;
@@ -578,28 +602,11 @@
     <div class="insight" style="padding:12px 16px;background:var(--accent-soft);border-radius:var(--radius);border-left:3px solid var(--accent);font-size:13px;color:var(--text-muted);line-height:1.6;margin-top:10px"><strong style="color:var(--text)">Гипотеза подтверждается:</strong> парный формат (2 чел.) — отдельный сценарий продукта. 2 из 2 парных = 10/10, средняя длина 76.5 сообщ. Ни одна соло-сессия не дотянула до этого уровня. Группы 3+ требуют пересмотра роли бота (фасилитатор, а не коуч).</div>
   </div>
 
-  <!-- Requests (full list) -->
+  <!-- Surface → Real problem -->
   <div class="section">
-    <div class="section-title">Запросы пользователей (все сессии с сообщениями)</div>
-    <div class="requests-list" id="requests-list"></div>
-
-    <div style="margin-top:20px">
-      <div class="section-title" style="margin-bottom:10px">Поверхностная проблема &rarr; Настоящая проблема</div>
-      <div class="bar-chart">
-        <div class="pattern-card" style="border-left:3px solid var(--blue)">
-          <div style="font-size:13px"><strong>Alexey:</strong> <span style="color:var(--text-dim)">&laquo;Хочу денег много&raquo;</span> &rarr; <span style="color:var(--accent)">&laquo;Хочу чувствовать, что чего-то стою&raquo;</span></div>
-        </div>
-        <div class="pattern-card" style="border-left:3px solid var(--blue)">
-          <div style="font-size:13px"><strong>Лера:</strong> <span style="color:var(--text-dim)">&laquo;Нет мотивации на работу&raquo;</span> &rarr; <span style="color:var(--accent)">&laquo;Изменилось отношение к себе&raquo;</span></div>
-        </div>
-        <div class="pattern-card" style="border-left:3px solid var(--blue)">
-          <div style="font-size:13px"><strong>Alexey:</strong> <span style="color:var(--text-dim)">&laquo;Как уснуть побыстрее?&raquo;</span> &rarr; <span style="color:var(--accent)">&laquo;Есть рабочий способ, но не могу начать&raquo;</span></div>
-        </div>
-        <div class="pattern-card" style="border-left:3px solid var(--blue)">
-          <div style="font-size:13px"><strong>Анастасия:</strong> <span style="color:var(--text-dim)">&laquo;СТМ или кобрендинг?&raquo;</span> &rarr; <span style="color:var(--accent)">&laquo;На каких условиях это вообще выгодно?&raquo;</span></div>
-        </div>
-      </div>
-    </div>
+    <div class="section-title">Поверхностная проблема &rarr; Настоящая проблема</div>
+    <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px;line-height:1.5">С каким запросом юзер пришёл и до чего бот довёл (реальная проблема, проявившаяся в диалоге). «—» = сессия не дошла до настоящей проблемы.</div>
+    <div class="problems-list" id="problems-list"></div>
   </div>
 
   <!-- User Profiles -->
@@ -726,35 +733,49 @@ const DATA = {
     { d: '18 апр', users: 1, sessions: 1 },
     { d: '20 апр', users: 1, sessions: 2 },
   ],
-  requests: [
+  problems: [
     { user: 'Кирилл', date: '13 апр', msgs: 2, rating: 1, format: 'solo',
-      text: 'хочу понять как денег хаработать' },
+      surface: 'хочу понять как денег заработать',
+      real: null, note: 'тестовая сессия, до реальной проблемы не дошло' },
     { user: 'Кирилл', date: '13 апр', msgs: 50, rating: null, format: 'solo',
-      text: 'хочу денег много' },
-    { user: 'Alexey', date: '13 апр', msgs: 32, rating: 10, format: 'solo',
-      text: 'Как уснуть бы побыстрее' },
-    { user: 'Alexey', date: '14 апр', msgs: 46, rating: 7, format: 'solo',
-      text: 'Даже не знаю' },
-    { user: 'Alexey', date: '14 апр', msgs: 6, rating: 10, format: 'solo',
-      text: 'Даже не знаю' },
+      surface: 'хочу денег много',
+      real: 'монетизация ElectroCoach и идентичность фаундера — «могу ли я вообще себя продавать?»' },
+    { user: 'Alexey (сон)', date: '13 апр', msgs: 32, rating: 10, format: 'solo',
+      surface: 'как уснуть побыстрее',
+      real: 'практический способ известен, но не могу начать его применять — блокер на уровне поведения, не знаний' },
+    { user: 'Alexey (самоценность)', date: '14 апр', msgs: 46, rating: 7, format: 'solo',
+      surface: 'даже не знаю',
+      real: 'петля «низкий доход → низкая самоценность → паралич → не могу изменить доход»; хочу чувствовать, что чего-то стою' },
+    { user: 'Alexey (еда)', date: '14 апр', msgs: 6, rating: 10, format: 'solo',
+      surface: 'пропускаю еду в течение дня',
+      real: null, note: 'сессия короткая (6 сообщ.), до уровня «почему» не дошла — бот зафиксировал цель и закрылся' },
     { user: 'Анастасия', date: '14 апр', msgs: 23, rating: null, format: 'solo',
-      text: 'Я произвожу пробиотики. Продаем в основном b2c — 85–90%. Сейчас пришёл клиент и спрашивает под СТМ или кобрендинг условия. Я до конца не понимаю, есть ли разница для нас' },
+      surface: 'СТМ или кобрендинг для клиента-пробиотиков?',
+      real: 'на каких условиях это вообще выгодно — ключевой критерий это маржа, а не бренд' },
     { user: 'Glebch', date: '14 апр', msgs: 12, rating: null, format: 'solo',
-      text: 'нужно собраться с силами и пройти трудный этап в бизнесе и личной жизни' },
+      surface: 'собраться с силами и пройти трудный этап в бизнесе и личной жизни',
+      real: 'хаос в задачах + кассовый разрыв — не знаю, с чего начать, чтобы снизить тревогу; юзер отвалился на фокусирующем вопросе' },
     { user: 'Лера', date: '16 апр', msgs: 18, rating: null, format: 'solo',
-      text: 'хочу разобраться со своим состоянием' },
+      surface: 'хочу разобраться со своим состоянием (нет мотивации на работу)',
+      real: 'изменилось отношение к себе раньше, чем упала мотивация — причина глубже, чем «лень»' },
     { user: 'darik', date: '16 апр', msgs: 24, rating: null, format: 'solo',
-      text: 'Недавно закончились отношения с парнем, который казался идеальным во всём: включал меня в свою жизнь, обожал и уважал, говорила совместных планах на будущее. Все закончилось как-то глупо: сначала мы поругались из-за какой-то мелочи, а после попыток помириться, он сказал, что любит, но не хочет больше пытаться. Я буквально не знаю куда себя деть, потому что кажется, что всё не может закончиться так просто. В моей картине мира, если у двух людей есть чувства друг другу, то за это нужно бороться. Но я уже не знаю, что могу сделать со своей стороны.' },
+      surface: 'недавно закончились отношения — не знаю, что могу сделать со своей стороны',
+      real: 'двойное горе: потеря человека + потеря веры в «если любишь, то борешься» как концепцию' },
     { user: 'Alexey + 3 чел.', date: '17 апр', msgs: 2, rating: 1, format: 'group',
-      text: 'Кому отвечать?' },
+      surface: 'кому отвечать?',
+      real: null, note: 'формат на 4 развалился за 4 мин — бот не смог удержать фокус, реальная проблема не всплыла' },
     { user: 'Alexey + Ярослав (пара)', date: '17 апр', msgs: 77, rating: 10, format: 'pair',
-      text: 'У нас еженедельная регулярная встреча форум-группы, и вообще нас четверо должно быть. Но сегодня пришли двое, и я до конца не понимаю цели и задач нашей форум-группы.\n\nОсобенно когда двое участников на нее не приходят, я начинаю вообще не понимать. Скорее всего, есть какая-то другая важность у ребят, и поэтому они не приходят.\n\nМеня особенно расстраивает то, что я сильно расчищаю календарь для того, чтобы эта встреча состоялась, а вот двое не пришли, и сегодня нас здесь двое.\n\nУ нас нет какого-то развития, встретились, обсудили как дела, в это есть ценность как общаться с близкими людьми. Это сейчас про дела, а не про эмоциональную историю. Либо дела поделать, либо на нашу встречу прийти.\n\nПрояснить хочется: мне кажется, что ожидания от форум-группы у всех разные. И это смущает. Хватает ли всем? И что делать, если не хватает?' },
+      surface: 'не понимаю цели и задач нашей форум-группы',
+      real: 'ожидания от группы у каждого участника разные — нужно их явно проговорить, иначе «недополучаю» будет только расти' },
     { user: 'Надежда', date: '18 апр', msgs: 48, rating: null, format: 'solo',
-      text: 'Я хочу разобрать цели в жизни! Или планы на жизнь' },
+      surface: 'хочу разобрать цели в жизни / планы на жизнь',
+      real: 'ядро = «спокойствие и безмятежность на фоне больших возможностей» — цели и план жизни нужно разворачивать вокруг этого ядра' },
     { user: 'Alexey + Кирилл (пара)', date: '20 апр', msgs: 76, rating: 10, format: 'pair',
-      text: 'Мы вместе с Кириллом ровно неделю назад захотели зайти в продуктовое обучение, чтобы научиться быстро запускать продукты, тестировать гипотезы, приводящие нас к финансовому результату.\n\nЕсли я не ошибаюсь, мы целились в то, чтобы за одну неделю понять, что хотим сделать: сделать, вывести на рынок, как-то проверить данные, удостовериться, движемся ли мы в метриках или нет, и обучиться этому.\n\nМы планировали двигаться такими недельными итерациями. Одна неделя у нас прошла. Прошла ли у нас одна итерация? Не знаю. Но одна неделя точно прошла, и вот мы пришли через семь дней, чтобы понять, где мы, в чем мы и что делать дальше.' },
+      surface: 'прошла ли у нас итерация в продуктовом обучении за эту неделю?',
+      real: 'первая неделя — не коммерческая итерация, а сборочно-обучающая; блокер — определить B2B jobs, собрать оффер, показать тёплым клиентам; на неделю нужны 2 метрики (5 новых B2B-сессий + переговоры на 100 тыс. ₽)' },
     { user: 'Посуточно квартиры', date: '20 апр', msgs: 24, rating: null, format: 'solo',
-      text: 'Отношения личные' },
+      surface: 'отношения личные — не могу выбрать партнёра, держу «запасной вариант»',
+      real: '«запасной вариант» — не от одиночества, а как защита от ошибки выбора; устала от цикла «надежда → вложение → разочарование → заново»' },
   ],
   users: [
     {
@@ -974,21 +995,29 @@ function renderDaily() {
   }).join('');
 }
 
-function renderRequests() {
-  const el = document.getElementById('requests-list');
+function renderProblems() {
+  const el = document.getElementById('problems-list');
   const fmtLabel = { solo: 'соло', pair: 'пара', group: 'группа 4' };
   const escapeHtml = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  el.innerHTML = DATA.requests.map(r => {
-    const cls = r.rating === 10 ? 'rating-high' : r.rating === 1 ? 'rating-low' : '';
-    const rating = r.rating !== null
-      ? `<span style="color:${r.rating >= 8 ? 'var(--accent)' : r.rating >= 5 ? 'var(--warn)' : 'var(--danger)'};font-weight:600">${r.rating}/10</span>`
+  el.innerHTML = DATA.problems.map(p => {
+    const stuck = !p.real;
+    const cls = stuck ? 'stuck' : p.rating === 10 ? 'rating-high' : p.rating === 1 ? 'rating-low' : '';
+    const rating = p.rating !== null
+      ? `<span style="color:${p.rating >= 8 ? 'var(--accent)' : p.rating >= 5 ? 'var(--warn)' : 'var(--danger)'};font-weight:600">${p.rating}/10</span>`
       : '<span style="color:var(--text-dim)">без оценки</span>';
-    return `<div class="request-item ${cls}">
-      <div class="request-head">
-        <span class="request-user">${r.user}<span class="request-format-badge fmt-${r.format}">${fmtLabel[r.format]}</span></span>
-        <span class="request-meta"><span>${r.date}</span><span>${r.msgs} сообщ.</span>${rating}</span>
+    const realBlock = stuck
+      ? `<span class="real stuck">— ${escapeHtml(p.note || 'не дошла')}</span>`
+      : `<span class="real">${escapeHtml(p.real)}</span>`;
+    return `<div class="problem-item ${cls}">
+      <div class="problem-head">
+        <span class="problem-user">${escapeHtml(p.user)}<span class="problem-format-badge fmt-${p.format}">${fmtLabel[p.format]}</span></span>
+        <span class="problem-meta"><span>${p.date}</span><span>${p.msgs} сообщ.</span>${rating}</span>
       </div>
-      <div class="request-text">${escapeHtml(r.text)}</div>
+      <div class="problem-flow">
+        <span class="surface">«${escapeHtml(p.surface)}»</span>
+        <span class="arrow">&rarr;</span>
+        ${realBlock}
+      </div>
     </div>`;
   }).join('');
 }
@@ -1146,7 +1175,7 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDetail(
 renderFunnel();
 renderHours();
 renderDaily();
-renderRequests();
+renderProblems();
 renderUsers();
 renderBarChart('reply-times', DATA.replyTimes, 200);
 renderBarChart('msg-lengths', DATA.msgLengths, 300);
