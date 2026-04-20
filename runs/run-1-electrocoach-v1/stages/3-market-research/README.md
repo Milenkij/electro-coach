@@ -11,7 +11,10 @@
 
 ## Prompts
 
-- (4 prompt-файла из `4-Working-with-data/prompts/` — переносятся сюда из Run 1)
+- `competitor-research.md`
+- `differentiation-strategy.md`
+- `extract-jobs-from-reviews.md`
+- `market-trends-research.md`
 
 ## Outputs
 

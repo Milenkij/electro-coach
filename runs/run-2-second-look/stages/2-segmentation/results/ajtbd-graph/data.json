@@ -4,8 +4,8 @@
     "subtitle": "«Второй взгляд» + квартальный контракт",
     "updated": "2026-04-16",
     "sources": [
-      "2-3-MVP B2B/results/ajtbd-analysis.md",
-      "2-3-MVP B2B/results/ajtbd-competitors.md"
+      "runs/run-2-second-look/stages/2-segmentation/results/ajtbd-analysis.md",
+      "runs/run-2-second-look/stages/2-segmentation/results/ajtbd-competitors.md"
     ]
   },
   "segment": "Фаундер/CEO компании 50–300 человек, выручка 1 млрд+ ₽/год, 3–7 лет, рост 2–3 квартала на плато или ниже плана.",
