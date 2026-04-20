@@ -1,177 +1,117 @@
-# ElectroCoach
+# ElectroCoach — Agent Guide
 
-AI-коуч в Telegram, заменяющий живого коуча / психолога / ментора для предпринимателей и людей в точке перемен. Методология: GROW (McKinsey/Google/ICF) + Логические уровни Дилтса. Рабочее название — нейминг ещё не финализирован.
+## Что это за репо
 
-## Структура проекта
+**Платформа для запуска экспериментов (runs)** над гипотезой AI-коуча для фаундеров и людей в точке перемен. Не один продукт, а набор версионированных ранов на общем шаблоне пайплайна.
 
-В проекте **две ветки продукта** — B2C и B2B. Они живут в отдельных папках и развиваются независимо.
+**Governing methodology:** [Метод параноика](knowledge/methodology/метод-параноика.md) — производство цифровых продуктов в условиях неопределённости. Воронка неопределённости, продюсерская модель, 5 принципов. Каждая стадия пайплайна — шаг воронки, каждый ран проходит одну и ту же последовательность.
+
+## Архитектура
 
 ```
-2-3-MVP/                          — основная ветка (B2C + общие материалы)
-  results/
-    index.html                    — стартовый лендинг: «Для себя» / «Для бизнеса»
-    PRD.md                        — Product Requirements Document (MVP scope, JTBD, метрики)
-    my-landing-page-text.md       — исходные тексты для первого лендинга
-    funnels.md                    — воронки по 13 сегментам, unit economics, целевая 1М ₽/мес
-    site-b2c/                     — B2C сайт: лендинги для физлиц
-      index.html                  — квиз-хаб: 3 вопроса → профилирование → рекомендация
-      founder.html                — фаундер в стагнации
-      reset.html                  — экзистенциальная точка
-      ceo.html                    — наёмный CEO / топ-менеджер
-      serial.html                 — серийный предприниматель
-      anxiety.html                — молодой специалист в тревоге
-      crisis.html                 — жизненный кризис
-      growth.html                 — энтузиаст саморазвития
-      budget.html                 — нет бюджета на специалиста
-    site-b2b/                     — B2B сайт: лендинги для корпоратов
-      index.html                  — квиз-хаб: размер → вызов → приоритеты → рекомендация
-      hr-enterprise.html          — HR-директор, 500+ (замена EAP)
-      ld-talent.html              — L&D / Talent Development
-      ceo-smb.html                — CEO малого бизнеса 50–200
-      transformation.html         — компания в трансформации
-      it-remote.html              — IT с распределённой командой
-  prompts/                        — промпты, использованные при создании артефактов
-
-2-3-MVP B2B/                      — форк для B2B-направления (поддержка сотрудников)
-  results/
-    funnels.md                    — воронки и unit economics (B2B-фокус)
-    PRD.md                        — PRD (копия, будет адаптирована под B2B)
-    site-b2b/                     — B2B лендинги (копия, для итераций)
-    site-b2c/                     — B2C лендинги (копия, справочно)
-    index.html                    — стартовый лендинг (копия)
-  prompts/                        — промпты
-
-bot/                              — Telegram-бот (MVP)
-naming/                           — материалы по неймингу
+pipeline-templates/v1/     — шаблон пайплайна (9 стадий, read-only для ранов)
+runs/
+  run-1-electrocoach-v1/   — frozen (B2C + B2B-as-EAP → MVP-бот в /bot)
+  run-2-second-look/       — frozen (B2B-консалтинг, пивот от run-1)
+  run-3-founder-coach/     — active, current_stage: 0-team-constitution
+knowledge/                 — библиотека знаний (methodology / patterns / learnings / decisions)
+archive/
+  workshop/                — frozen учебные материалы
+  source-materials/        — исходники для экстракта в knowledge/
+bot/                       — live-артефакт Run 1 (CI/CD на путь bot/**)
 ```
 
-**Важно:** `2-3-MVP B2B/` — это самостоятельная ветка для проработки B2B-продукта. Изменения в ней НЕ должны автоматически переноситься в `2-3-MVP/`. Если нужно синхронизировать — делать явно и по согласованию.
+Детали — в [README.md](README.md).
 
-## Дизайн-система
+## Как найти текущую работу за 60 секунд
 
-Все лендинги — standalone HTML (без билд-системы, CSS и JS инлайн).
+1. `runs/*/meta.yml` → ищи `status: active`
+2. В этом ране: `meta.yml → current_stage`
+3. Работать в `runs/<active-run>/stages/<current_stage>/results/`
+4. Контекст — в [`runs/<active-run>/MOC.md`](runs/)
 
-- **Тема**: dark — `#111318` фон, `#5b8def` accent
-- **Шрифты**: Sora (заголовки), Outfit (текст) — Google Fonts
-- **Анимации**: IntersectionObserver, класс `.r` → `.r.v`, задержки `.d1`–`.d4`
-- **Адаптив**: CSS Grid, media queries на 820px и 640px
+На сегодня **active run — `run-3-founder-coach`**, на стадии `0-team-constitution` (in-progress).
+
+## Где писать артефакты
+
+**Только внутри active run.** Путь: `runs/<active-run>/stages/<N>/results/<artifact>`.
+
+Не пишите артефакты в:
+- `pipeline-templates/v1/` — шаблон read-only, мутации запрещены
+- Корень репо — ран-артефакты живут в своём ране
+- Frozen раны (`run-1-*`, `run-2-*`) — они зафиксированы
+
+Исключение — `/bot/` (live Telegram-бот Run 1, см. ниже).
+
+## Как работать с pipeline-template
+
+- Каждая версия (`v1/`, потенциально `v2/` в будущем) — **read-only per run**. Ран копирует шаблон при старте (решение [copy-at-start](knowledge/decisions/copy-at-start.md)).
+- Раны остаются на **своей** версии навсегда ([pipeline-frozen-per-run](knowledge/decisions/pipeline-frozen-per-run.md)). Нельзя «подтянуть актуальный шаблон» в уже стартовавший ран.
+- Delta в методологии → создать `pipeline-templates/v2/` (см. триггеры в карточке решения).
+
+## Как стартовать новый ран
+
+```bash
+# 1. Скопировать шаблон
+cp -r pipeline-templates/v1 runs/run-N-<name>
+rm runs/run-N-<name>/{meta.template.yml,MOC.template.md}
+
+# 2. Написать meta.yml (под конкретный ран) и MOC.md (скелет)
+
+# 3. Пройти Stage 0 — Team Constitution
+#    Результат: stages/0-team-constitution/results/constitution.md
+#    БЕЗ ЭТОГО АРТЕФАКТА РАН НЕ ПЕРЕХОДИТ В STAGE 1
+
+# 4. Только после подписанной конституции — открыть Stage 1 (Discovery)
+```
+
+## Stage 0 gating
+
+**Новый ран не стартует в Discovery, пока Stage 0 не закрыт подписанной `constitution.md`.** Это реализация принципа «гибкие проектные команды» Метода параноика. Причины — в [stage-0-gating.md](knowledge/decisions/stage-0-gating.md).
+
+Форматы Stage 0 по размеру команды:
+- Соло — self-diagnostic (один проходит все 7 промптов на себе)
+- Dyad — cross-diagnostic (каждый ведёт второго)
+- Команда — полный формат
+
+Исторические раны (Run 1, Run 2) прошли до введения Stage 0 — в них `stages/0-team-constitution/results/STUB.md` с пометкой «historical gap», не ретро-заполняются.
+
+## Как использовать `/knowledge/`
+
+- **MOC-first:** каждый ран имеет `MOC.md` с разделами по стадиям и ссылками на карточки. Начинать ориентирование с MOC, не с рандомного grep
+- 4 подпапки:
+  - [`methodology/`](knowledge/methodology/) — методологические рамки (GROW, Дилтс, AJTBD, Метод параноика, диагностики, Naming playbook)
+  - [`patterns/`](knowledge/patterns/) — техн. / продуктовые паттерны (Dark landing system, Quiz hub, AJTBD graph)
+  - [`learnings/`](knowledge/learnings/) — уроки из ранов
+  - [`decisions/`](knowledge/decisions/) — архитектурные решения
+- Новая карточка — только если знание переиспользуемо (применимо за пределами одного рана). Для узкого контекста — артефакт рана
+
+## Bot как live-артефакт
+
+`/bot/` — исполняемый MVP Run 1, физически в корне **по инфраструктурной причине**: `.github/workflows/bot.yml` триггерится на путь `bot/**`. Перенос сломает CI/CD (см. [bot-stays-at-root.md](knowledge/decisions/bot-stays-at-root.md)).
+
+- Любая разработка в `bot/` — **через spec-kit** (см. [`bot/AGENTS.md`](bot/AGENTS.md))
+- Если Run 3 решит делать своего бота — код идёт в `runs/run-3-founder-coach/stages/7-mvp/`, не в `/bot/`
+- `/bot/prompts/`, `/bot/spec/`, `/bot/src/` — продакшен-артефакты, не перемещать без freeze Run 1 с передачей MVP
 
 ## Обязательные MCP-серверы
 
-- **Context7** (`context7`) — используется для получения актуальной документации по библиотекам и API. При старте сессии агент **обязан** проверить доступность Context7 (через `ToolSearch` с запросом `context7`). Если инструменты Context7 не загружены — **немедленно сообщить пользователю** и предложить перезапустить сессию.
+**Context7** (`context7`) — документация по библиотекам и API. При старте сессии агент **обязан** проверить доступность Context7 через `ToolSearch` с запросом `context7`. Если инструменты не загружены — **немедленно сообщить пользователю**.
 
 ## Правила деплоя
 
-- **Код — только через git.** Все изменения кода доставляются на VPS через `git push` → CI/CD (GitHub Actions). Никогда не редактировать код напрямую на сервере по SSH.
-- **SSH — только для не-git операций**: `.env` файлы, gitignored конфиги, `docker compose restart`, просмотр логов, другие серверные операции.
+- **Код — только через git.** Все изменения доставляются через `git push` → GitHub Actions. Никогда не редактировать на сервере по SSH
+- **SSH — только для не-git операций:** `.env`, gitignored конфиги, `docker compose restart`, логи
+- **Запрет `git push` внутри сессий Claude** — см. [CLAUDE.md](CLAUDE.md). Агент может делать коммиты / теги / ветки локально, но push делает пользователь
 
-## Ключевые принципы
+## Язык
 
-### Квиз (index.html в обоих сайтах)
-- **Не навешивает ярлыки.** Задача — спрофилировать пользователя и перевести на подходящий лендинг, а не присвоить категорию.
-- Результат описывается как ситуация («Кажется, у вас вот такая ситуация»), а не как тип личности.
-- Под результатом — «Или выберите сам» с полной сеткой всех сегментов.
-- 3 вопроса — баланс между точностью и конверсией (меньше drop-off).
+**Все разговоры с пользователем — строго на русском.** Технические идентификаторы и имена файлов — в оригинале. Контент артефактов — на языке, в котором написан.
 
-### B2C лендинги
-- **Ты-форма**, эмоциональный тон
-- Секции: hero с болью → «Узнаёшь себя?» триггеры → чат-мокап (демо диалога) → фичи → FAQ → CTA на Telegram-бот
-- Каждый лендинг — отдельная боль и контекст, не просто замена заголовка
+## Быстрая карта знаний
 
-### B2B лендинги
-- **Вы-форма**, деловой тон
-- Секции: hero со статистикой → метрики → фичи → «Знакомо?» → сравнение с альтернативами (таблица) → FAQ → CTA на пилот/демо
-- ROI-метрики, стоимость замены сотрудника, утилизация EAP
-- CTA: «Обсудить внедрение» / «Запустить пилот»
-
-## Telegram-бот (MVP)
-
-Код в `bot/`. Методология разработки: [spec-kit](https://github.com/github/spec-kit/) (Spec-Driven Development).
-
-### Обязательный процесс для любых изменений в боте
-
-**Любая** новая фича, изменение поведения или исправление бага в боте проходит через spec-kit агентов (`bot/AGENTS.md`). Каждый этап **согласуется с пользователем** перед переходом к следующему:
-
-1. **Specify** → задать пользователю все уточняющие вопросы по требованиям → получить подтверждение → обновить `spec/spec.md` → показать пользователю → получить ОК
-2. **Plan** → предложить техническое решение → показать пользователю → получить ОК → обновить `spec/plan.md`
-3. **Tasks** → декомпозировать в задачи → показать пользователю → получить ОК → обновить `spec/tasks.md`
-4. **Implement** → написать код по задачам → показать пользователю → получить ОК
-5. **Review** → проверить перед деплоем
-
-**Важно:** Пользователь — владелец требований. На этапе Specify агент задаёт все необходимые вопросы, а не додумывает сам. Переход на следующий этап — только после явного подтверждения пользователя.
-
-Нельзя писать код бота напрямую, минуя спецификацию. Исключение — критические хотфиксы (бот упал, не запускается).
-
-### Стек
-- **Python 3.11+**, aiogram 3, asyncpg, httpx
-- **LLM**: OpenRouter API (пресет `@preset/electrocoach`, модель выбирается на стороне OpenRouter)
-- **БД**: PostgreSQL 16 (Docker контейнер, подключение через asyncpg)
-- **Деплой**: Docker Compose на VPS (mentors@193.124.56.183), CI/CD через GitHub Actions
-
-### Структура bot/
-```
-bot/
-├── AGENTS.md                    — spec-kit: роли агентов (Specify, Plan, Tasks, Implement, Review)
-├── prompts/                     — многослойная система промптов коуча
-│   ├── base/                    — always-loaded: идентичность + safety
-│   ├── playbook/                — always-loaded: операционные ходы
-│   ├── cards/                   — conditional: тематические карточки (по keyword match)
-│   ├── product-rules.md         — GROW + Дилтс + тайминг + UX-правила
-│   └── USAGE.md                 — логика загрузки слоёв
-├── requirements.txt             — aiogram, asyncpg, httpx, python-dotenv
-├── .env                         — секреты (Telegram token, OpenRouter key, DATABASE_URL)
-├── .env.example                 — шаблон секретов
-├── spec/                        — spec-kit артефакты
-│   ├── constitution.md          — принципы кода и продукта
-│   ├── spec.md                  — продуктовая спецификация (сценарии, команды, ограничения)
-│   ├── plan.md                  — технический план (архитектура, модули, БД)
-│   └── tasks.md                 — задачи с чеклистом по этапам
-├── migrations/
-│   └── 001_init.sql             — схема БД: users, sessions, messages
-└── src/
-    ├── config.py                — загрузка .env, dataclass Config
-    ├── db.py                    — asyncpg pool, CRUD для users/sessions/messages
-    ├── llm.py                   — OpenRouter chat completions
-    ├── session.py               — FSM сессии (idle → active → awaiting_rating), управление лимитами
-    ├── bot.py                   — aiogram Router: /start, /new, /stop, текстовые сообщения
-    └── main.py                  — точка входа: init DB pool → run migration → start polling
-```
-
-### Секреты (в bot/.env, не в git)
-- `TELEGRAM_BOT_TOKEN` — токен Telegram-бота
-- `OPENROUTER_API_KEY` — ключ OpenRouter
-- `DATABASE_URL` — строка подключения PostgreSQL
-
-### Текущий статус
-- **Задеплоен** на VPS в Docker (bot + PostgreSQL)
-- **CI/CD**: push в main с изменениями в `bot/` → GitHub Actions → SSH → git pull → docker compose up --build
-- **Пресет OpenRouter**: `@preset/electrocoach`
-
-### Запуск (локально)
-```bash
-cd bot
-pip install -r requirements.txt
-python -m src.main
-```
-
-### Запуск (продакшен)
-```bash
-cd ~/electrocoach/bot
-docker compose up -d --build
-```
-
-### Принципы (из spec/constitution.md)
-- Async-first для всего I/O
-- Коуч не советчик — только вопросы и отражение
-- Один вопрос за раз в диалоге
-- Атомарные сессии без памяти между ними
-- 2 бесплатные сессии, потом заглушка подписки
-
-## Что ещё не сделано
-
-- **Нейминг** — ElectroCoach рабочее название, финальное не выбрано
-- **Деплой сайтов** — лендинги пока только локальные HTML
-- **Аналитика** — трекинг, UTM, события квиза
-- **Монетизация** — подписка 5–15K/мес для B2C, корпоративный прайсинг для B2B
-- **A/B тесты** — разные варианты квиз-вопросов и порядка сегментов
-- **Платёжная интеграция** — сейчас заглушка после 2 бесплатных сессий
+- Governing methodology: [Метод параноика](knowledge/methodology/метод-параноика.md)
+- Pipeline: [v1 charter](pipeline-templates/v1/README.md)
+- Архитектурные решения: [knowledge/decisions/](knowledge/decisions/)
+- Урок Run 1 → Run 2: [b2b-eap-pivot-to-consulting](knowledge/learnings/b2b-eap-pivot-to-consulting.md)
+- Seed Run 3: [founder-coach-group-mode](knowledge/learnings/founder-coach-group-mode.md)
