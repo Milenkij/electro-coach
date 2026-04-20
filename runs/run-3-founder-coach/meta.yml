@@ -1,0 +1,52 @@
+id: run-3-founder-coach
+name: "Founder-coach — персональный + групповая фасилитация"
+pipeline_version: v1
+status: active
+started_at: 2026-04-20
+frozen_at: null
+owner: milenkij@gmail.com
+team:
+  - kirill-milenkij
+  - alexey-shapovalov
+parent_run: null
+
+hypothesis: >
+  ElectroCoach применяется в двух режимах параллельно: (1) персональный
+  AI-коучинг фаундера как дешёвая высокочастотная ставка и (2) групповая
+  фасилитация «AI в ухе у фаундера» — сооснователи, топы, партнёры
+  проходят управляемую сессию с фаундером как ведущим. Персональное
+  использование — не prerequisite, а параллельная точка входа;
+  «персональное в служении групповому» — возможный третий путь
+  (~15% по данным Run 2 AJTBD).
+
+segments_target:
+  - founder-personal
+  - cofounder-dyad
+  - founder-plus-top-team
+
+mvp_artifact:
+  kind: null
+  path: null
+  deploy: null
+
+current_stage: 0-team-constitution
+stage_0_status: in-progress
+constitution_artifact: stages/0-team-constitution/results/constitution.md
+
+knowledge_moc: ./MOC.md
+
+notes: |
+  Dyad-ран: Кирилл + Алексей (бади по проекту). Оба прогоняют
+  friend-диагностику друг на друге (founder-interview обоих,
+  cross-feedback). Совмещаются в единый документ constitution.md.
+
+  Team-diagnostic — в урезанной форме: ролевая модель на двоих
+  (кто за что отвечает в ране, стоп-факторы каждого). Отдельные
+  интервью с подчинёнными не проводятся (нет подчинённых).
+
+  Stage 1 не считается начатым, пока Stage 0 не закрыт артефактом
+  «Конституция команды» (см. /knowledge/decisions/stage-0-gating.md).
+
+  Lineage: пивот идёт от Run 2 (AJTBD-открытия про параллельные
+  точки входа), но parent_run=null — Run 3 не наследует сегменты
+  Run 2, а стартует чистым от базовой гипотезы Run 1 с новой рамкой.

@@ -1,0 +1,45 @@
+id: run-1-electrocoach-v1
+name: "ElectroCoach v1 (B2C + B2B-as-EAP)"
+pipeline_version: v1
+status: frozen
+started_at: 2026-04-13
+frozen_at: 2026-04-17
+owner: milenkij@gmail.com
+team: [kirill-milenkij]
+parent_run: null
+
+hypothesis: >
+  AI-коуч в Telegram заменяет живого коуча/психолога/ментора для
+  предпринимателей и людей в точке перемен; B2C по 13 сегментам +
+  B2B-ветка как замена EAP для 500+.
+
+segments_target:
+  - founder-stagnation
+  - reset-point
+  - ceo-smb
+  - serial-entrepreneur
+  - anxiety
+  - crisis
+  - growth
+  - budget
+  - hr-enterprise
+  - ld-talent
+  - transformation
+  - it-remote
+
+mvp_artifact:
+  kind: telegram-bot
+  path: /bot
+  deploy: .github/workflows/bot.yml
+
+current_stage: null
+stage_0_status: historical-gap
+constitution_artifact: null
+
+knowledge_moc: ./MOC.md
+
+notes: |
+  Первый ран проекта. Прошёл до введения Stage 0 и runs platform.
+  Реструктурирован в папку runs/ при миграции на v1 пайплайн 2026-04-20.
+  Выход рана: задеплоенный Telegram-бот в /bot (CI/CD через .github/workflows/bot.yml).
+  Run 2 («Второй взгляд») — пивот от этого рана под B2B-консалтинг.
