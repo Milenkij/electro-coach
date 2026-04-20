@@ -1,0 +1,46 @@
+id: run-2-second-look
+name: "Второй взгляд — B2B-консалтинг для компаний в стагнации"
+pipeline_version: v1
+status: frozen
+started_at: 2026-04-14
+frozen_at: 2026-04-17
+owner: milenkij@gmail.com
+team: [kirill-milenkij]
+parent_run: run-1-electrocoach-v1
+
+hypothesis: >
+  Пивот от Run 1 (B2C AI-коуч) в B2B-консалтинг «Второй взгляд»:
+  единоразовая диагностика за 150 000 ₽ + квартальный контракт
+  300–500 000 ₽/мес для компаний 50–300 человек с выручкой 1 млрд+ ₽.
+  Инструмент — AJTBD-карта работ фаундера.
+
+segments_target:
+  - founder-stagnation-b2b
+  - company-transformation
+
+mvp_artifact:
+  kind: landing-page
+  path: runs/run-2-second-look/stages/6-landings/results/landing.html
+  deploy: null
+
+current_stage: null
+stage_0_status: historical-gap
+constitution_artifact: null
+
+knowledge_moc: ./MOC.md
+
+notes: |
+  Пивот от Run 1. Инициирован после учебных дашбордов по реальным
+  данным бота и открытия, что монетизация B2C-подписки не вытягивает
+  unit-economics. Ключевой инсайт — продукт становится B2B-консалтингом
+  с AI-инструментарием, а не B2C-подпиской.
+
+  Артефакты рана:
+  - AJTBD-карта работ фаундера (stages/2-segmentation/results/ajtbd-analysis.md)
+  - AJTBD-граф (stages/2-segmentation/results/ajtbd-graph/ — интерактивная визуализация)
+  - Segment analysis + конкуренты (там же)
+  - Business model + funnels-b2b (stages/8-analytics/results/)
+  - B2B-лендинг «Второй взгляд» (stages/6-landings/results/landing.html)
+
+  Run 3 («founder-coach») — пивот уже от этого рана, под фаундеров
+  лично + групповая фасилитация.
