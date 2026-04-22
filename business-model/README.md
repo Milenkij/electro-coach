@@ -19,4 +19,5 @@ business-model/
 
 ## Индекс канвасов
 
-- [2026-04-21](canvases/2026-04-21.md) — draft, предмет не определён
+- [2026-04-21](canvases/2026-04-21.md) — ✅ complete (Solo B2B-coaching practice, Алексей Шаповалов)
+  - [SWOT-анализ](canvases/2026-04-21-swot.md) — по каждому из 9 блоков + сводный

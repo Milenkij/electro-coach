@@ -29,6 +29,7 @@ bot/.env
 
 # Output (generated PDFs)
 naming/output/
+business-model/output/
 
 # OS
 .DS_Store
