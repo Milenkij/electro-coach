@@ -8,474 +8,415 @@ description:
 
 ## Workspace (ElectroCoach)
 
-Этот скил работает в папке `business-model/` репозитория ElectroCoach и **автономен**: не связан с `pipeline-templates/`, `runs/` и `knowledge/`.
+Скил работает в папке `business-model/` репозитория ElectroCoach.
 
-- Все заполненные канвасы сохраняются в `business-model/canvases/<name>.md` (один файл — один канвас).
-- Имя файла — kebab-case, отражает предмет канваса (`electrocoach-b2c.md`, `competitor-airbnb.md`, `pivot-v2.md`). Если предмет не определён — использовать дату (`2026-04-21.md`).
-- Индекс канвасов — в `business-model/README.md`; обновлять после каждого нового файла.
+- Заполненные канвы — в `business-model/canvases/<name>.md`. Один файл — одна канва.
+- Имя файла — kebab-case, отражает предмет (`electrocoach-b2c.md`, `competitor-airbnb.md`, `pivot-v2.md`). Если предмет не определён — дата (`2026-04-21.md`).
+- Индекс канв — в `business-model/README.md`. Обновлять после каждого нового файла.
+- SWOT-анализ — отдельный артефакт рядом с канвой: `business-model/canvases/<name>-swot.md`.
+- HTML-дашборд (опционально) — `business-model/output/<name>.html`. Шаблон — `business-model/templates/dashboard.html`.
+- PDF-выгрузки — `business-model/output/<name>.pdf`. В git **не коммитятся** (`.gitignore`).
 
-## Режимы работы
+## Принципы работы
 
-Канвас можно заполнять двумя режимами:
+1. **Один вопрос за раз.** Не вываливаю 5 вопросов сразу. Если вопрос провоцирует длинный ответ — разбиваю на несколько коротких.
+2. **Шапка на каждой стадии.** В чате перед стадией и в каждом сообщении-вопросе:
+   - На стадиях 1, 2, 4, 5: `Стадия N/5: <название>`.
+   - На стадии 3: `Стадия 3/5: Дизайн. Блок M/9: <блок>`.
+3. **Промежуточная сводка между стадиями.** «Стадия N закрыта. Иду дальше — стадия N+1: <название>. Готов?» Без согласия не двигаюсь.
+4. **Обновление файла канвы — обязательно сразу после фикса блока.** Не в конце сессии. После каждого `✅ Fixed <date>` агент пишет блок в файл, обновляет Canvas Overview и Evidence. Если оборвут сессию — следующая сессия читает актуальный файл и продолжает с того же места.
+5. **Стиль Ильяхова** — короткие предложения, факты, без воды и стоп-слов. См. [09-packaging.md](../knowledge/methodology/osterwalder/09-packaging.md).
+6. **Если ответа нет** — даю варианты из типологии книги. Пользователь выбирает.
+7. **Не додумываю за пользователя.** Все выводы — на основе ответов и записаны в Evidence.
 
-### Режим A — synthesis (предмет известен)
-Есть готовая бизнес-модель, её нужно описать. Агент заполняет блоки из входных данных (brief, предыдущие артефакты, ответы пользователя), соблюдая методологию.
+## Старт
 
-### Режим B — diagnostic (предмет не определён, interview-driven) ← **основной режим для ElectroCoach**
-Канвас используется как диагностический инструмент, чтобы понять, **в каком сейчас состоянии бизнес-модель**. Предмет проявляется в процессе, иногда — только к концу.
+Спрашиваю по одному (принцип 1):
 
-**Алгоритм diagnostic-режима:**
+1. **Имя проекта** — для имени файла. Кратко, латиницей или транслитом, kebab-case. Например `support-vladelcev`, `nastya-decret`, `competitor-airbnb`.
+2. **Что разбираем** — свою модель / клиентскую / новую идею.
+3. **Точка отсчёта** — есть текущая модель (описываем «как есть») или с нуля (проектируем).
+4. **Время** — есть ли 1,5–2 часа? Если меньше — отказ: «Методика требует минимум 1,5–2 часа полного прохождения. Лучше выделить время и пройти за один раз. Сократить нельзя — теряется смысл.»
 
-1. **По одному блоку за раз.** Идём в порядке методологии Остервальдера (обычно с Customer Segments), либо с блока, по которому у пользователя больше всего сигнала.
-2. **Probing-вопросы.** Агент задаёт 3–5 открытых вопросов по блоку. Вопросы — не на «заполнить форму», а на вскрытие реальности (фактические клиенты, не гипотетические; реальные платежи, не план и т.п.).
-3. **Пользователь отвечает** — в чате или в файле (`business-model/<scratch>` или аналог). Если отвечает в файле — указывает путь.
-4. **Агент синтезирует ответ в блок канваса** + отдельно выносит:
-   - **Слабости / противоречия** — что пользователь сказал, но не считал как проблему.
+После ответов создаю файл `business-model/canvases/<name>.md` с шаблоном вывода (см. ниже) и обновляю индекс в `business-model/README.md`.
+
+## Режим обновления существующей канвы
+
+Если файл `business-model/canvases/<name>.md` уже существует — спрашиваю:
+
+1. **Обновляем целиком** — полный новый проход по всем 5 стадиям. Старая канва переписывается.
+2. **Обновляем конкретные блоки** — пользователь называет блоки (например, «5, 6, 9»). Прохожу только их.
+3. **Создаём v2-файл рядом** — новый файл `<name>-v2.md`. В шапке — ссылка на v1. Старый файл не трогаем.
+
+Без явного подтверждения не начинаю работу.
+
+## Карта методологии (Knowledge map)
+
+Методология — в [knowledge/methodology/osterwalder/](../knowledge/methodology/osterwalder/). Читаю по ходу работы только нужный файл, не все:
+
+| Файл | Когда читать |
+|---|---|
+| [01-template.md](../knowledge/methodology/osterwalder/01-template.md) | Стадия 3 (Дизайн). 9 блоков, типологии, probing-вопросы |
+| [02-styles.md](../knowledge/methodology/osterwalder/02-styles.md) | Стадия 4. 5 стилей: длинный хвост, FREE, многосторонние платформы, разделение, открытые модели |
+| [03-design.md](../knowledge/methodology/osterwalder/03-design.md) | Стадия 2 (карта эмпатии). Стадия 3 (прототипирование, сценарии) |
+| [04-strategy.md](../knowledge/methodology/osterwalder/04-strategy.md) | Стадия 2 (среда). Стадия 4 (SWOT, голубой океан, треугольник). Стадия 5 (множественные модели) |
+| [05-method.md](../knowledge/methodology/osterwalder/05-method.md) | Стадия 1 (отстой/восторг, 4 типа целей). Сквозная отсылка к 5 стадиям |
+| [06-examples.md](../knowledge/methodology/osterwalder/06-examples.md) | Когда нужен пример: Apple, Skype, Zipcar, Nespresso, Cirque du Soleil, Wii, Netflix, Airbnb |
+| [07-blockers.md](../knowledge/methodology/osterwalder/07-blockers.md) | Стадия 3, при фразе «канал не работает». Распознать тип блокировки |
+| [08-reconciliation.md](../knowledge/methodology/osterwalder/08-reconciliation.md) | Стадия 3, после блоков 5/6/9. Сверка чисел cross-block |
+| [09-packaging.md](../knowledge/methodology/osterwalder/09-packaging.md) | Стадия 5. Ильяхов-стиль + PDF + HTML-дашборд |
+| [10-patterns-55.md](../knowledge/methodology/osterwalder/10-patterns-55.md) | Стадия 4. Каталог 55 паттернов Гассмана |
+| [11-myths.md](../knowledge/methodology/osterwalder/11-myths.md) | Стадия 1. 6 мифов Гассмана |
+| [12-implementation-checklist.md](../knowledge/methodology/osterwalder/12-implementation-checklist.md) | Стадия 5. Чек-лист 10 рекомендаций |
+
+## Процесс — 5 стадий
+
+### Стадия 1/5. Мобилизация
+
+**Цель:** понять, что именно проектируем.
+
+Шаги (по одному вопросу):
+
+1. **Цель проекта** — 4 типа из книги ([05-method.md](../knowledge/methodology/osterwalder/05-method.md)):
+   - Удовлетворить рынок (Tata Nano, Grameen Bank).
+   - Вывести на рынок (Xerox 914, Nespresso, Red Hat).
+   - Улучшить рынок (Dell, Wii, Skype, Zipcar, Ryanair).
+   - Создать рынок (Diners Club, Google).
+
+2. **Команда проекта** — кто защищает новую модель внутри организации? Кто может сопротивляться?
+
+3. **6 мифов Гассмана** — короткий проход, ~5 минут. См. [11-myths.md](../knowledge/methodology/osterwalder/11-myths.md). По каждому: «Не попадаем ли в него сейчас?» Если ловим — записываем.
+
+4. **Если идея сырая — упражнение «отстой/восторг»** ([05-method.md](../knowledge/methodology/osterwalder/05-method.md)):
+   - 5 минут «почему не сработает» (10–15 причин).
+   - 5 минут «почему сработает» (10–15 причин).
+
+5. **Волшебный треугольник как ориентир** — запоминаем: новая модель должна менять минимум 2 из 4 измерений (КТО / ЧТО / КАК / ПОЧЕМУ). См. [04-strategy.md](../knowledge/methodology/osterwalder/04-strategy.md), §6. Проверим на стадии 4.
+
+**Записываю в файл канвы:** раздел «0. Мобилизация» (цель, команда, пойманные мифы, ориентир-треугольник).
+
+**Промежуточная сводка** → согласие → стадия 2.
+
+### Стадия 2/5. Понимание
+
+**Цель:** понять контекст модели.
+
+#### 2.1. Среда — 4 силы
+
+По [04-strategy.md](../knowledge/methodology/osterwalder/04-strategy.md), §1. По очереди:
+
+- **Рыночные факторы.** Сегменты, потребности, затраты переключения, привлечение прибыли.
+- **Отраслевые факторы.** Конкуренты, новички, заменители, поставщики, заинтересованные стороны.
+- **Ключевые тренды.** Технологические, регуляторные, социокультурные, демографические.
+- **Макроэкономические факторы.** Состояние экономики, капитал, цены на ресурсы, инфраструктура.
+
+#### 2.2. Карта эмпатии главного сегмента
+
+Если сегментов несколько — выбираем самый важный. Заполняем за конкретного представимого человека.
+
+6 вопросов из [03-design.md](../knowledge/methodology/osterwalder/03-design.md):
+
+1. **Что видит?** — окружение, кто рядом, какие предложения, какие проблемы.
+2. **Что слышит?** — коллеги, партнёр, семья, медиа, инфлюенсеры.
+3. **Что думает и чувствует?** — что важно, что трогает, из-за чего не спит, мечты.
+4. **Что говорит и делает?** — публичная позиция, поступки, расхождение со словами.
+5. **Тревоги.** — разочарования, страхи, препятствия.
+6. **Стремления.** — чего хочет, мерило успеха.
+
+**Записываю в файл канвы:** разделы «1. Понимание / Среда» и «1. Понимание / Карта эмпатии».
+
+**Промежуточная сводка** → согласие → стадия 3.
+
+### Стадия 3/5. Дизайн
+
+**Цель:** заполнить 9 блоков канвы.
+
+#### Выбор подрежима
+
+- **Synthesis** — есть бриф / артефакты / готовая модель. Заполняю блоки сам, проверяю с пользователем по блоку. Probing 1–2 уточняющих вопроса на блок.
+- **Diagnostic** (основной для ElectroCoach) — interview-driven. Probing 3–5 открытых вопросов на блок. Evidence verbatim.
+
+Если пользователь не выбрал — спрашиваю явно: «Synthesis или diagnostic?»
+
+#### Алгоритм для каждого блока
+
+1. **Шапка:** «Стадия 3/5: Дизайн. Блок M/9: <название>».
+2. **Probing-вопросы.** 1–2 (synthesis) или 3–5 (diagnostic). По одному. Не «заполнить форму», а вскрытие реальности.
+3. **Пользователь отвечает** — в чате или в файле. Если в файле — указывает путь.
+4. **Запись verbatim в Evidence канвы.** Обязательный шаг — без него будущая сессия теряет контекст.
+5. **Синтез ответа в блок канвы** + отдельно выношу:
+   - **Слабости и противоречия** — что пользователь сказал, но не считал проблемой.
    - **Сильные стороны** — что уже работает.
    - **Открытые гипотезы** — что ещё надо проверить.
-5. **Агент записывает сырой ответ verbatim в секцию `## Evidence`** канваса (см. ниже). Это — обязательный шаг, чтобы будущая сессия не потеряла контекст.
-6. **Фиксирует блок** маркером `✅ Fixed <date>` в заголовке блока.
-7. **Переходит к следующему блоку** — с отсылкой на то, что вылезло в предыдущем.
+6. **Фиксация** маркером `✅ Fixed <date>` в заголовке блока.
+7. **Обновление файла канвы.** Записываю синтез в раздел блока, Evidence verbatim, обновляю Canvas Overview. **Прямо сейчас, не в конце сессии.**
+8. **Переход к следующему блоку** с отсылкой на то, что вылезло в предыдущем.
 
-В конце — агент формирует итоговый синтез (Strategic Assessment + Recommendations), где впервые может быть назван предмет канваса и тип бизнес-модели.
+#### Дополнительные шаги внутри стадии 3
 
-## Секция Evidence в канвасе (обязательно для diagnostic-режима)
+- **При фразе «канал не работает» / «не делаем»** — задать уточняющий вопрос на тип блокировки (убеждения / избегание / нехватка навыка). См. [07-blockers.md](../knowledge/methodology/osterwalder/07-blockers.md).
+- **После блоков 5 (доходы), 6 (ресурсы), 9 (издержки)** — сверка чисел cross-block. Чек-лист в [08-reconciliation.md](../knowledge/methodology/osterwalder/08-reconciliation.md). Реальный дефицит может отличаться от заявленного в Q6.5 в 3 раза.
 
-В конце файла канваса — секция:
+#### Порядок блоков
+
+По умолчанию — порядок книги: 1→2→3→4→5→6→7→8→9. Можно начать с блока, по которому у пользователя больше всего сигнала, но обязательно пройти все 9.
+
+**Промежуточная сводка** → согласие → стадия 4.
+
+### Стадия 4/5. Стратегия
+
+**Цель:** оценить модель, найти слабые места и рычаги для перемен.
+
+#### 4.1. SWOT по 9 блокам
+
+По [04-strategy.md](../knowledge/methodology/osterwalder/04-strategy.md), §2. Один зонд-вопрос на блок. Каждому блоку выставляем цвет (для HTML-дашборда):
+
+- 🟢 (S) — сильный.
+- 🟡 (O) — есть возможности или вопросы.
+- 🔴 (W/T) — слабое место или внешняя угроза.
+
+#### 4.2. Прогон через 5 стилей Остервальдера
+
+См. [02-styles.md](../knowledge/methodology/osterwalder/02-styles.md). По каждому стилю — гипотеза «что изменится, если применить». Если стиль явно не подходит — пишу почему, но не пропускаю.
+
+#### 4.3. Каталог 55 паттернов Гассмана
+
+См. [10-patterns-55.md](../knowledge/methodology/osterwalder/10-patterns-55.md). Выбираю 5–7 паттернов:
+
+- 3–4 по принципу подобия (близкие отрасли).
+- 2–3 по принципу конфронтации (далёкие отрасли).
+- 1 провокационный.
+
+Для каждого — гипотеза «что изменится».
+
+#### 4.4. Проверка волшебным треугольником
+
+См. [04-strategy.md](../knowledge/methodology/osterwalder/04-strategy.md), §6. Каждую гипотезу из 4.2 и 4.3 проверяю: меняет ли минимум 2 из 4 измерений (КТО / ЧТО / КАК / ПОЧЕМУ)?
+
+- 1 измерение → улучшение, отделяю в отдельную секцию.
+- 2+ → инновация, идёт в дашборд и рекомендации.
+
+#### 4.5. Модель 4 действий (голубой океан)
+
+См. [04-strategy.md](../knowledge/methodology/osterwalder/04-strategy.md), §3. По модели в целом:
+
+- **Исключить.** Что отрасль считает само собой разумеющимся, но можно убрать?
+- **Сократить.** Что значительно уменьшить?
+- **Увеличить.** Что значительно усилить?
+- **Создать.** Что никогда раньше не предлагалось?
+
+#### 4.6. Три «что, если»
+
+Три провокации, ломающие статус-кво. Например, для коучинга: «Что, если перестанем брать почасовую плату?»
+
+**Записываю в файл канвы:** разделы «Стратегия / SWOT по блокам», «Стратегия / Гипотезы (стили + паттерны + 4 действия + что если)», «Strategic Assessment».
+
+**Промежуточная сводка** → согласие → стадия 5.
+
+### Стадия 5/5. Применение
+
+**Цель:** что делать в ближайшие 30 дней.
+
+#### 5.1. Три ближайших шага
+
+- **Шаг 1** — что делаем в первую очередь? (срок, ответственный)
+- **Шаг 2** — следующий шаг.
+- **Шаг 3** — третий шаг.
+- **Точка проверки** — когда и по каким признакам поймём, что движемся правильно.
+- **Что НЕ трогаем** — где статус-кво специально сохраняем.
+
+#### 5.2. Интеграция / автономия / разделение
+
+Если разрабатываем новую модель в существующей компании — 3 вопроса по Маркидесу. См. [04-strategy.md](../knowledge/methodology/osterwalder/04-strategy.md), §4:
+
+- Острота конфликта между старой и новой моделями?
+- Стратегическое подобие?
+- Степень риска (бренд, заработки, законы)?
+
+Решение: интеграция / автономия / разделение.
+
+#### 5.3. Чек-лист 10 рекомендаций Гассмана
+
+См. [12-implementation-checklist.md](../knowledge/methodology/osterwalder/12-implementation-checklist.md). 10 вопросов «да / нет / частично». Слабые «нет» по пунктам 1, 2, 5, 9 — серьёзный блок, сначала закрыть, потом запускать.
+
+#### 5.4. Упаковка артефактов
+
+См. [09-packaging.md](../knowledge/methodology/osterwalder/09-packaging.md):
+
+- md остаётся как первичный артефакт.
+- PDF через `pandoc <name>.md --pdf-engine=weasyprint -o output/<name>.pdf`.
+- HTML-дашборд (опционально) — подставляю маркеры в `business-model/templates/dashboard.html` → `business-model/output/<name>.html`.
+
+#### 5.5. Финальный вопрос
+
+«Что из этого больше всего удивило?» — для рефлексии и фиксации инсайта.
+
+**Записываю в файл канвы:** разделы «Recommendations» (3 шага), «Применение / Чек-лист 10 рекомендаций», «Применение / Что удивило».
+
+## Секция Evidence
+
+В конце файла канвы — секция:
 
 ```markdown
 ## Evidence — исходный материал интервью
 
-### Блок N — <Block Name> (<date>)
+### Блок N — <Название блока> (<date>)
 
 **Q<N>.<i> — <вопрос агента>**
 
-> <ответ пользователя verbatim, без правок, блоком blockquote>
+> <ответ пользователя verbatim, без правок, в blockquote>
 ```
 
-**Правила Evidence:**
-- Verbatim. Никаких перефразировок, сокращений, причёсывания орфографии.
-- Если ответ был в файле — перенести содержимое в Evidence, файл можно удалить (либо оставить, если пользователь указал).
-- Один блок канваса = один подраздел в Evidence.
-- Evidence всегда в конце файла, после Recommendations.
+**Правила:**
 
-**Зачем это нужно:** канвас — живой документ, между сессиями меняется агент, меняется контекст. Синтез в блоках — это интерпретация агента, которая может быть неточной. Evidence — первичный материал, на который любой будущий агент может опереться, чтобы пересобрать выводы.
+- **Verbatim.** Никаких перефразировок, сокращений, причёсывания орфографии.
+- Если ответ был в файле — перенести содержимое в Evidence. Файл можно удалить (или оставить, если пользователь указал).
+- Один блок канвы = один подраздел в Evidence.
+- Evidence — всегда в конце файла, после Recommendations.
 
-# Business Model Canvas - Strategic Business Design
+**Зачем:** канва — живой документ. Между сессиями меняется агент и контекст. Синтез в блоках — интерпретация, может быть неточной. Evidence — первичный материал, на котором любой будущий агент пересоберёт выводы без потерь.
 
-Visual framework for developing, documenting, and iterating on business models.
-Created by Alexander Osterwalder, used worldwide by startups and enterprises.
-
-## When to Use This Skill
-
-- Evaluating new product or startup ideas
-- Analyzing competitor business models
-- Planning business pivots or expansions
-- Communicating strategy to stakeholders
-- Identifying gaps in current business model
-- Due diligence on investments or partnerships
-
-## The Nine Building Blocks
-
-```
-┌─────────────────┬─────────────────┬─────────────────┬─────────────────┬─────────────────┐
-│                 │                 │                 │                 │                 │
-│  KEY PARTNERS   │ KEY ACTIVITIES  │                 │   CUSTOMER      │                 │
-│                 │                 │     VALUE       │  RELATIONSHIPS  │    CUSTOMER     │
-│  Who helps us?  │ What do we do?  │  PROPOSITIONS   │                 │    SEGMENTS     │
-│                 │                 │                 │  How do we      │                 │
-│                 ├─────────────────┤  What value     │  interact?      │  Who do we      │
-│                 │                 │  do we deliver? │                 │  serve?         │
-│                 │ KEY RESOURCES   │                 ├─────────────────┤                 │
-│                 │                 │                 │                 │                 │
-│                 │ What do we need?│                 │    CHANNELS     │                 │
-│                 │                 │                 │                 │                 │
-│                 │                 │                 │  How do we      │                 │
-│                 │                 │                 │  reach them?    │                 │
-│                 │                 │                 │                 │                 │
-├─────────────────┴─────────────────┴─────────────────┴─────────────────┴─────────────────┤
-│                                           │                                             │
-│              COST STRUCTURE               │              REVENUE STREAMS                │
-│                                           │                                             │
-│              What does it cost?           │              How do we earn?                │
-│                                           │                                             │
-└───────────────────────────────────────────┴─────────────────────────────────────────────┘
-```
-
-## Building Block Details
-
-### 1. Customer Segments
-
-Who are you creating value for?
-
-| Segment Type     | Description                       | Example                         |
-| ---------------- | --------------------------------- | ------------------------------- |
-| **Mass Market**  | No distinction between customers  | Consumer electronics            |
-| **Niche Market** | Specialized, specific segments    | Luxury goods                    |
-| **Segmented**    | Slightly different needs/problems | Bank retail vs. wealth          |
-| **Diversified**  | Unrelated segments                | Amazon: retail + AWS            |
-| **Multi-sided**  | Interdependent segments           | Credit cards: merchants + users |
-
-Questions to answer:
-
-- Who are our most important customers?
-- What jobs are they trying to get done?
-- What pains and gains do they have?
-
-### 2. Value Propositions
-
-What value do you deliver to the customer?
-
-| Value Type          | Description                          |
-| ------------------- | ------------------------------------ |
-| **Newness**         | Satisfying previously unmet needs    |
-| **Performance**     | Improving existing product/service   |
-| **Customization**   | Tailoring to specific needs          |
-| **Getting it done** | Helping customers complete a job     |
-| **Design**          | Superior aesthetics or experience    |
-| **Brand/Status**    | Value from using a specific brand    |
-| **Price**           | Similar value at lower price         |
-| **Cost Reduction**  | Helping customers reduce costs       |
-| **Risk Reduction**  | Reducing risks customers face        |
-| **Accessibility**   | Available to those who lacked access |
-| **Convenience**     | Making things easier to use          |
-
-### 3. Channels
-
-How do you reach and communicate with customers?
-
-```
-Channel Phases:
-
-Awareness → Evaluation → Purchase → Delivery → After-sales
-    │           │           │          │           │
-    ▼           ▼           ▼          ▼           ▼
-  Ads        Website      Store     Shipping    Support
-  PR         Reviews      App       Install     Training
-  Social     Demos        Sales     Access      Updates
-```
-
-| Channel Type | Examples                               |
-| ------------ | -------------------------------------- |
-| **Direct**   | Sales force, website, owned stores     |
-| **Indirect** | Partner stores, wholesalers            |
-| **Owned**    | Physical stores, website, app          |
-| **Partner**  | Distributors, affiliates, marketplaces |
-
-### 4. Customer Relationships
-
-What type of relationship does each segment expect?
-
-| Relationship Type       | Description                          |
-| ----------------------- | ------------------------------------ |
-| **Personal assistance** | Human interaction during/after       |
-| **Dedicated**           | Specific rep for individual customer |
-| **Self-service**        | No direct relationship               |
-| **Automated**           | Simulated personal via automation    |
-| **Communities**         | User communities and forums          |
-| **Co-creation**         | Customers help create value          |
-
-### 5. Revenue Streams
-
-How does each customer segment generate revenue?
-
-| Revenue Type        | Description              | Pricing       |
-| ------------------- | ------------------------ | ------------- |
-| **Asset sale**      | Selling ownership rights | Fixed/Dynamic |
-| **Usage fee**       | Pay per use              | Per-unit      |
-| **Subscription**    | Continuous access        | Recurring     |
-| **Lending/Renting** | Temporary access         | Time-based    |
-| **Licensing**       | Permission to use IP     | Per-license   |
-| **Brokerage**       | Intermediation fees      | Transaction % |
-| **Advertising**     | Fees for advertising     | CPM/CPC/CPA   |
-
-### 6. Key Resources
-
-What assets are essential to deliver the value proposition?
-
-| Resource Type    | Examples                                |
-| ---------------- | --------------------------------------- |
-| **Physical**     | Facilities, machines, vehicles, POS     |
-| **Intellectual** | Brands, patents, data, proprietary tech |
-| **Human**        | Expert staff, sales teams, engineers    |
-| **Financial**    | Cash, credit lines, stock options       |
-
-### 7. Key Activities
-
-What must you do to deliver the value proposition?
-
-| Activity Type        | Examples                                     |
-| -------------------- | -------------------------------------------- |
-| **Production**       | Manufacturing, designing, delivering         |
-| **Problem Solving**  | Consulting, training, custom dev             |
-| **Platform/Network** | Maintaining platform, matching supply/demand |
-
-### 8. Key Partners
-
-Who are your key partners and suppliers?
-
-| Partnership Type       | Motivation                       |
-| ---------------------- | -------------------------------- |
-| **Strategic alliance** | Non-competitors working together |
-| **Coopetition**        | Competitors partnering           |
-| **Joint ventures**     | New business development         |
-| **Buyer-supplier**     | Reliable supplies                |
-
-Partnership motivations:
-
-- Optimization and economy of scale
-- Reduction of risk and uncertainty
-- Acquisition of resources and activities
-
-### 9. Cost Structure
-
-What are the most important costs?
-
-| Cost Type              | Description                     |
-| ---------------------- | ------------------------------- |
-| **Fixed costs**        | Salaries, rent, utilities       |
-| **Variable costs**     | Materials, commissions, hosting |
-| **Economies of scale** | Cost advantages from volume     |
-| **Economies of scope** | Cost advantages from variety    |
-
-| Model Type       | Focus                            |
-| ---------------- | -------------------------------- |
-| **Cost-driven**  | Minimize costs wherever possible |
-| **Value-driven** | Focus on value creation          |
-
-## Analysis Framework
-
-### Step 1: Define Customer Segments First
-
-Start with who you serve:
-
-```
-Primary Segment:
-├── Demographics: [Age, location, income]
-├── Psychographics: [Values, interests, lifestyle]
-├── Behaviors: [Usage patterns, buying habits]
-└── Needs: [Jobs to be done, pains, gains]
-
-Secondary Segments:
-├── [Segment 2]
-└── [Segment 3]
-```
-
-### Step 2: Articulate Value Proposition
-
-For each segment, define the value:
-
-```
-Value Proposition Canvas:
-
-Customer Jobs          Product/Service
-├── Functional         ├── Features
-├── Social             ├── Benefits
-└── Emotional          └── Experience
-        ↓                    ↓
-Customer Pains     →   Pain Relievers
-        ↓                    ↓
-Customer Gains     →   Gain Creators
-```
-
-### Step 3: Map Channels and Relationships
-
-How you reach and interact with customers:
-
-```
-Customer Journey:
-
-Discover → Research → Buy → Use → Advocate
-    │          │        │     │        │
-    ▼          ▼        ▼     ▼        ▼
-Channel:   SEO/Ads   Website  App   Email   Referral
-Relation:  Automated  Self    Self  Auto    Community
-```
-
-### Step 4: Define Infrastructure
-
-What you need to deliver:
-
-```
-Value Delivery Infrastructure:
-
-Key Partners          Key Activities         Key Resources
-├── Suppliers         ├── Core operations    ├── Physical
-├── Distributors      ├── Support            ├── Intellectual
-└── Allies            └── Platform           ├── Human
-                                             └── Financial
-```
-
-### Step 5: Model Economics
-
-Understand the financial viability:
-
-```
-Revenue Streams                 Cost Structure
-├── [Stream 1]: $X/unit        ├── Fixed: $Y/month
-├── [Stream 2]: $X/month       ├── Variable: $Z/unit
-└── [Stream 3]: X% of GMV      └── CAC: $W/customer
-
-Unit Economics:
-├── LTV: $[amount]
-├── CAC: $[amount]
-├── LTV:CAC ratio: [X]:1
-└── Payback period: [months]
-```
-
-## Output Template
-
-After completing analysis, document as:
+## Шаблон вывода (артефакт канвы)
 
 ```markdown
-## Business Model Canvas
+# Канва бизнес-модели — <название>
 
-**Company/Product:** [Name]
+**Предмет:** [Название продукта или субъекта]
+**Дата:** [YYYY-MM-DD]
+**Статус:** draft / in-progress / complete
+**Версия:** v1 (или v2 со ссылкой на v1)
 
-**Date:** [Date]
+## 0. Мобилизация
 
-### Canvas Overview
+- **Цель проекта:** [тип из 4]
+- **Команда:** [кто защищает / кто сопротивляется]
+- **Пойманные мифы:** [если ловили, иначе «не поймали»]
+- **Ориентир-треугольник:** меняем минимум 2 из 4 (КТО / ЧТО / КАК / ПОЧЕМУ)
 
-| Block                  | Summary                  |
-| ---------------------- | ------------------------ |
-| Customer Segments      | [Key segments]           |
-| Value Propositions     | [Core value delivered]   |
-| Channels               | [Primary channels]       |
-| Customer Relationships | [Relationship types]     |
-| Revenue Streams        | [How you make money]     |
-| Key Resources          | [Critical assets]        |
-| Key Activities         | [Core operations]        |
-| Key Partners           | [Strategic partnerships] |
-| Cost Structure         | [Major cost drivers]     |
+## 1. Понимание
 
-### Detailed Analysis
+### Среда (4 силы)
+- **Рынок:** [...]
+- **Отрасль:** [...]
+- **Тренды:** [...]
+- **Макроэкономика:** [...]
 
-#### Customer Segments
+### Карта эмпатии главного сегмента
+- **Видит:** [...]
+- **Слышит:** [...]
+- **Думает и чувствует:** [...]
+- **Говорит и делает:** [...]
+- **Тревоги:** [...]
+- **Стремления:** [...]
 
-[Detailed breakdown of segments, their needs, and characteristics]
+## Обзор канвы
 
-#### Value Propositions
+| Блок | Краткое содержание | SWOT |
+|---|---|---|
+| Клиентские сегменты | [...] | 🟢 / 🟡 / 🔴 |
+| Ценностное предложение | [...] | |
+| Каналы | [...] | |
+| Отношения с клиентами | [...] | |
+| Потоки выручки | [...] | |
+| Ключевые ресурсы | [...] | |
+| Ключевые действия | [...] | |
+| Ключевые партнёры | [...] | |
+| Структура затрат | [...] | |
 
-[Specific value delivered to each segment, pain relievers, gain creators]
+## Подробный разбор
 
-#### Channels
+### 1. Клиентские сегменты — ✅ Fixed YYYY-MM-DD
+[синтез блока: что есть, что не работает, открытые гипотезы]
 
-[Channel strategy across customer journey phases]
+[повторить для всех 9 блоков]
 
-#### Customer Relationships
+## Стратегия / Гипотезы
 
-[Relationship types per segment and their cost/value]
+### SWOT по блокам
+[опросник из 04-strategy §2 по каждому блоку]
 
-#### Revenue Streams
+### 5 стилей Остервальдера
+[гипотеза по каждому стилю + комментарий «подходит / не подходит, потому что»]
 
-[Revenue model details, pricing strategy, unit economics]
+### 55 паттернов Гассмана
+[5–7 выбранных паттернов с гипотезами + классификация улучшение/инновация через треугольник]
 
-#### Key Resources
+### Модель 4 действий
+- **Исключить:** [...]
+- **Сократить:** [...]
+- **Увеличить:** [...]
+- **Создать:** [...]
 
-[Critical resources and their strategic importance]
+### Три «что, если»
+1. [...]
+2. [...]
+3. [...]
 
-#### Key Activities
+## Strategic Assessment
 
-[Core activities that drive value creation]
+**Сильные стороны:** [...]
+**Слабые стороны:** [...]
+**Возможности:** [...]
+**Угрозы:** [...]
 
-#### Key Partners
+## Recommendations (3 шага)
 
-[Partnership strategy and key relationships]
+| Приоритет | Действие | Срок | Ответственный |
+|---|---|---|---|
+| Шаг 1 | [...] | [...] | [...] |
+| Шаг 2 | [...] | [...] | [...] |
+| Шаг 3 | [...] | [...] | [...] |
 
-#### Cost Structure
+**Точка проверки:** [когда и по каким признакам]
+**Что НЕ трогаем:** [...]
 
-[Cost drivers, fixed vs variable, economies of scale/scope]
+## Применение
 
-### Strategic Assessment
+### Чек-лист 10 рекомендаций Гассмана
+1. Поддержка руководства / партнёров — да / нет / частично
+2. Разноплановая команда — ...
+3. Открытость учиться у других — ...
+4. Сомнение в доминирующей логике — ...
+5. Культура «можно ошибаться» — ...
+6. Итеративная проверка — ...
+7. Не утонули в анализе — ...
+8. Быстрый прототип / MVP — ...
+9. Защищённая среда для роста — ...
+10. Лидерство в переменах — ...
 
-**Strengths:**
+### Что больше всего удивило
+[ответ пользователя на финальный вопрос]
 
-- [Strength 1]
-- [Strength 2]
+---
 
-**Weaknesses:**
+## Evidence — исходный материал интервью
 
-- [Weakness 1]
-- [Weakness 2]
+### Блок 1 — Клиентские сегменты (YYYY-MM-DD)
 
-**Opportunities:**
+**Q1.1 — [вопрос]**
 
-- [Opportunity 1]
-- [Opportunity 2]
+> [verbatim ответ]
 
-**Risks:**
-
-- [Risk 1]
-- [Risk 2]
-
-### Recommendations
-
-| Priority | Action   | Expected Impact |
-| -------- | -------- | --------------- |
-| High     | [Action] | [Impact]        |
-| Medium   | [Action] | [Impact]        |
+[повторить для всех вопросов всех блоков]
 ```
 
-## Real-World Examples
+## SWOT-анализ как отдельный артефакт
 
-### Netflix
+После того как канва заполнена и зафиксирована — на её основе делается **отдельный SWOT-анализ**: файл `business-model/canvases/<name>-swot.md`. Содержит:
 
-| Block             | Details                                             |
-| ----------------- | --------------------------------------------------- |
-| **Segments**      | Streaming viewers, content enthusiasts              |
-| **Value Prop**    | Unlimited on-demand content, originals, no ads      |
-| **Channels**      | App, smart TVs, website, partnerships               |
-| **Relationships** | Automated personalization, self-service             |
-| **Revenue**       | Monthly subscription tiers                          |
-| **Resources**     | Content library, recommendation AI, brand           |
-| **Activities**    | Content production, platform development            |
-| **Partners**      | Studios, device manufacturers, ISPs                 |
-| **Costs**         | Content acquisition, tech infrastructure, marketing |
+- SWOT по каждому из 9 блоков (4 коротких списка S/W/O/T).
+- Сводный SWOT модели — самые важные пункты со всех блоков.
+- Критические пересечения «возможности × угрозы» — таблица с временными окнами.
 
-### Airbnb
+Структура и подход — в [04-strategy.md](../knowledge/methodology/osterwalder/04-strategy.md), §5.
 
-| Block             | Details                                         |
-| ----------------- | ----------------------------------------------- |
-| **Segments**      | Travelers (guests), property owners (hosts)     |
-| **Value Prop**    | Unique stays, extra income, trust platform      |
-| **Channels**      | Website, app, social, SEO                       |
-| **Relationships** | Community, reviews, support                     |
-| **Revenue**       | Service fees (guest + host)                     |
-| **Resources**     | Platform, brand, user data, trust system        |
-| **Activities**    | Matching, trust & safety, community             |
-| **Partners**      | Payment processors, insurance, photographers    |
-| **Costs**         | Platform development, trust & safety, marketing |
+Индекс в `business-model/README.md` — добавить ссылку на SWOT под канвой.
 
-## Best Practices
+## Упаковка в PDF и HTML-дашборд
 
-### Do
+Финальные артефакты выгружаем в `business-model/output/`:
 
-- **Start with customer** - Everything flows from customer segments
-- **Test assumptions** - Each block contains hypotheses to validate
-- **Iterate frequently** - Update as you learn from the market
-- **Check coherence** - All blocks should connect logically
-- **Quantify where possible** - Add numbers to revenue and costs
+- **PDF**: `pandoc <name>.md --pdf-engine=weasyprint -o output/<name>.pdf`. См. [09-packaging.md](../knowledge/methodology/osterwalder/09-packaging.md).
+- **HTML-дашборд** (опционально): подставляю маркеры в `business-model/templates/dashboard.html` и сохраняю в `output/<name>.html`. См. [09-packaging.md](../knowledge/methodology/osterwalder/09-packaging.md).
 
-### Avoid
-
-- **Inside-out thinking** - Don't start with product features
-- **Static canvas** - It's a living document, not a one-time exercise
-- **Ignoring competition** - Understand competitor business models
-- **Skipping validation** - Assumptions need testing with real customers
-- **Over-complicating** - Keep it high-level and actionable
-
-## Integration with Other Methods
-
-| Method                | Combined Use                              |
-| --------------------- | ----------------------------------------- |
-| **Jobs-to-be-Done**   | Deep dive into value proposition          |
-| **Five Whys**         | Root cause analysis of model weaknesses   |
-| **Lean Startup**      | Build-measure-learn cycles for validation |
-| **Value Proposition** | Detailed value-customer fit analysis      |
-| **Graph Thinking**    | Map relationships between canvas elements |
-
-## Resources
-
-- [Strategyzer - Business Model Canvas](https://www.strategyzer.com/canvas)
-- [Business Model Generation - Osterwalder & Pigneur](https://www.strategyzer.com/books/business-model-generation)
-- [Value Proposition Design](https://www.strategyzer.com/books/value-proposition-design)
+PDF и HTML в git **не коммитятся** — каталог `business-model/output/` уже в `.gitignore`.
