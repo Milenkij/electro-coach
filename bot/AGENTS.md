@@ -112,3 +112,10 @@
 - **Источник правды** — файлы в `spec/`. Если код противоречит спецификации, побеждает спецификация.
 - **Каскад изменений:** изменение в spec.md → обновить plan.md → обновить tasks.md → реализовать.
 - **Никогда** не менять файлы в `prompts/` без явного запроса пользователя — это ядро продукта.
+
+## Client PDF Gate
+
+- Клиентские PDF из этой вложенной папки собираются только через общий gate `python3 ../../../08-ops/scripts/client_pdf.py render <source.md> <output.pdf>`.
+- Source markdown для клиентского PDF должен иметь frontmatter: `audience: external`, `artifact_type: client_pdf`, `render_profile: ...`.
+- В client-facing source нельзя добавлять тексты для копирования в чат, follow-up, внутренние подсказки, TODO, hypotheses, локальные пути и ссылки на рабочие инструкции.
+- PDF считается готовым только после `.validation.json` рядом с PDF; ручной `pandoc`, ручной `Chrome`, `html-to-pdf.js` и локальные копии рендер-скриптов не являются финальным путем.

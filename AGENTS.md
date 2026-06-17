@@ -115,3 +115,10 @@ rm runs/run-N-<name>/{meta.template.yml,MOC.template.md}
 - Архитектурные решения: [knowledge/decisions/](knowledge/decisions/)
 - Урок Run 1 → Run 2: [b2b-eap-pivot-to-consulting](knowledge/learnings/b2b-eap-pivot-to-consulting.md)
 - Seed Run 3: [founder-coach-group-mode](knowledge/learnings/founder-coach-group-mode.md)
+
+## Client PDF Gate
+
+- Клиентские PDF собираются только через общий gate `python3 ../../08-ops/scripts/client_pdf.py render <source.md> <output.pdf>` из этого подпроекта.
+- Source markdown для клиентского PDF должен иметь frontmatter: `audience: external`, `artifact_type: client_pdf`, `render_profile: ...`.
+- В client-facing source нельзя добавлять тексты для копирования в чат, follow-up, внутренние подсказки, TODO, hypotheses, локальные пути и ссылки на рабочие инструкции.
+- PDF считается готовым только после `.validation.json` рядом с PDF; ручной `pandoc`, ручной `Chrome`, `html-to-pdf.js` и локальные копии рендер-скриптов не являются финальным путем.

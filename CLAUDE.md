@@ -98,3 +98,10 @@ cd bot && pip install -r requirements.txt && python -m src.main
 ```bash
 cd ~/electrocoach/bot && docker compose up -d --build
 ```
+
+## Client PDF Gate
+
+- Клиентские PDF собираются только через общий gate `python3 ../../08-ops/scripts/client_pdf.py render <source.md> <output.pdf>` из этого подпроекта.
+- Source markdown для клиентского PDF должен иметь frontmatter: `audience: external`, `artifact_type: client_pdf`, `render_profile: ...`.
+- В client-facing source нельзя добавлять тексты для копирования в чат, follow-up, внутренние подсказки, TODO, hypotheses, локальные пути и ссылки на рабочие инструкции.
+- PDF считается готовым только после `.validation.json` рядом с PDF; ручной `pandoc`, ручной `Chrome`, `html-to-pdf.js` и локальные копии рендер-скриптов не являются финальным путем.
