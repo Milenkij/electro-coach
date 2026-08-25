@@ -1,3 +1,9 @@
+---
+project_scope: personal
+---
+
+`AGENTS.md` — единственный источник инструкций проекта. `CLAUDE.md` содержит только `@AGENTS.md` и отдельно не редактируется.
+
 # ElectroCoach — Agent Guide
 
 ## Что это за репо
@@ -102,7 +108,7 @@ rm runs/run-N-<name>/{meta.template.yml,MOC.template.md}
 
 - **Код — только через git.** Все изменения доставляются через `git push` → GitHub Actions. Никогда не редактировать на сервере по SSH
 - **SSH — только для не-git операций:** `.env`, gitignored конфиги, `docker compose restart`, логи
-- **Запрет `git push` внутри сессий Claude** — см. [CLAUDE.md](CLAUDE.md). Агент может делать коммиты / теги / ветки локально, но push делает пользователь
+- **Запрет `git push` из агентских сессий** действует по этому `AGENTS.md`: агент может делать локальные коммиты / теги / ветки, но push делает пользователь
 
 ## Язык
 
