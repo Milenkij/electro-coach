@@ -1,3 +1,9 @@
+---
+project_scope: personal
+---
+
+`AGENTS.md` — единственный источник инструкций проекта. `CLAUDE.md` содержит только импорт `@AGENTS.md` и защитный комментарий; другие инструкции в него не добавляются.
+
 # ElectroCoach — Agent Guide
 
 ## Что это за репо
@@ -102,7 +108,7 @@ rm runs/run-N-<name>/{meta.template.yml,MOC.template.md}
 
 - **Код — только через git.** Все изменения доставляются через `git push` → GitHub Actions. Никогда не редактировать на сервере по SSH
 - **SSH — только для не-git операций:** `.env`, gitignored конфиги, `docker compose restart`, логи
-- **Запрет `git push` внутри сессий Claude** — см. [CLAUDE.md](CLAUDE.md). Агент может делать коммиты / теги / ветки локально, но push делает пользователь
+- **Запрет `git push` из агентских сессий** действует по этому `AGENTS.md`: агент может делать локальные коммиты / теги / ветки, но push делает пользователь
 
 ## Язык
 
@@ -115,3 +121,10 @@ rm runs/run-N-<name>/{meta.template.yml,MOC.template.md}
 - Архитектурные решения: [knowledge/decisions/](knowledge/decisions/)
 - Урок Run 1 → Run 2: [b2b-eap-pivot-to-consulting](knowledge/learnings/b2b-eap-pivot-to-consulting.md)
 - Seed Run 3: [founder-coach-group-mode](knowledge/learnings/founder-coach-group-mode.md)
+
+## Client PDF Gate
+
+- Клиентские PDF собираются только через общий gate `python3 ../../08-ops/scripts/client_pdf.py render <source.md> <output.pdf>` из этого подпроекта.
+- Source markdown для клиентского PDF должен иметь frontmatter: `audience: external`, `artifact_type: client_pdf`, `render_profile: ...`.
+- В client-facing source нельзя добавлять тексты для копирования в чат, follow-up, внутренние подсказки, TODO, hypotheses, локальные пути и ссылки на рабочие инструкции.
+- PDF считается готовым только после `.validation.json` рядом с PDF; ручной `pandoc`, ручной `Chrome`, `html-to-pdf.js` и локальные копии рендер-скриптов не являются финальным путем.

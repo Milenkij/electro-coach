@@ -1,0 +1,1290 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Бизнес-модель: km-to-be (h2 v4)</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    background: #f8f9fa;
+    color: #1a1a1a;
+    line-height: 1.5;
+    padding: 32px;
+  }
+  .container { max-width: 1400px; margin: 0 auto; }
+
+  /* Шапка */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid #1a1a1a;
+  }
+  .header h1 { font-size: 28px; font-weight: 600; }
+  .header .meta { color: #6b7280; font-size: 14px; }
+
+  /* Заголовки секций */
+  .section-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: #6b7280;
+    margin-bottom: 12px;
+  }
+
+  /* Hero — гипотеза */
+  .hero {
+    background: #1a1a1a;
+    color: #fff;
+    border-radius: 8px;
+    padding: 24px;
+    margin-bottom: 24px;
+  }
+  .hero .label {
+    font-size: 11px;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: #9ca3af;
+    margin-bottom: 8px;
+  }
+  .hero h2 {
+    font-size: 22px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    line-height: 1.3;
+  }
+  .hero p { font-size: 14px; color: #d1d5db; }
+  .hero .stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #374151;
+  }
+  .hero .stat .num { font-size: 22px; font-weight: 700; color: #fbbf24; }
+  .hero .stat .lbl { font-size: 12px; color: #9ca3af; margin-top: 4px; }
+
+  /* Среда — 4 силы */
+  .environment {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+    padding: 16px;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+  }
+  .environment-cell h3 {
+    font-size: 12px;
+    font-weight: 600;
+    color: #6b7280;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .environment-cell p { font-size: 13px; color: #374151; }
+
+  /* Канва — 9 блоков */
+  .canvas {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    grid-template-rows: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 24px;
+    min-height: 540px;
+  }
+  .block {
+    background: #fff;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 14px;
+    overflow: hidden;
+  }
+  .block.green  { border-color: #4ade80; background: #f0fdf4; }
+  .block.yellow { border-color: #fbbf24; background: #fffbeb; }
+  .block.red    { border-color: #f87171; background: #fef2f2; }
+  .block h2 {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #6b7280;
+    margin-bottom: 10px;
+  }
+  .block .content {
+    font-size: 12.5px;
+    color: #1a1a1a;
+    white-space: pre-wrap;
+  }
+
+  .partners      { grid-column: 1; grid-row: 1 / 3; }
+  .activities    { grid-column: 2; grid-row: 1; }
+  .resources     { grid-column: 2; grid-row: 2; }
+  .value         { grid-column: 3; grid-row: 1 / 3; }
+  .relationships { grid-column: 4; grid-row: 1; }
+  .channels      { grid-column: 4; grid-row: 2; }
+  .segments      { grid-column: 5; grid-row: 1 / 3; }
+
+  /* Нижняя строка — издержки и доходы */
+  .economics {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 24px;
+  }
+  .economics .block { min-height: 120px; }
+
+  /* НОВОЕ: 4 финальных сценария */
+  .scenarios {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 24px;
+  }
+  .scenarios-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-top: 12px;
+  }
+  .scenario {
+    padding: 14px;
+    border-radius: 8px;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+  }
+  .scenario.s1 { border-left: 4px solid #fbbf24; }
+  .scenario.s2 { border-left: 4px solid #ef4444; }
+  .scenario.s3 { border-left: 4px solid #10b981; }
+  .scenario.s4 { border-left: 4px solid #6366f1; }
+  .scenario .priority {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: #6b7280;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .scenario h4 { font-size: 14px; font-weight: 600; margin-bottom: 10px; }
+  .scenario .lpr { font-size: 11px; color: #6b7280; margin-bottom: 10px; }
+  .scenario .metrics {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    font-size: 11px;
+  }
+  .scenario .metric .num { font-weight: 600; color: #1a1a1a; font-size: 13px; }
+  .scenario .metric .lbl { color: #6b7280; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .scenario .signal {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #e5e7eb;
+    font-size: 11px;
+    color: #4b5563;
+  }
+
+  /* НОВОЕ: волшебный треугольник */
+  .triangle {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 24px;
+  }
+  .triangle table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 13px; }
+  .triangle th, .triangle td {
+    text-align: left;
+    padding: 8px 10px;
+    border-bottom: 1px solid #f3f4f6;
+  }
+  .triangle th { font-size: 11px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; }
+  .triangle td.dim { font-weight: 600; width: 100px; }
+  .triangle td.shift { width: 50px; text-align: center; color: #10b981; font-weight: 700; }
+
+  /* Карта эмпатии */
+  .empathy {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 24px;
+  }
+  .empathy-segment {
+    font-size: 13px;
+    color: #4b5563;
+    margin-top: 6px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #f3f4f6;
+  }
+  .empathy-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-top: 12px;
+  }
+  .empathy-cell h4 {
+    font-size: 12px;
+    color: #6b7280;
+    margin-bottom: 6px;
+    font-weight: 600;
+  }
+  .empathy-cell p { font-size: 13px; }
+
+  /* Риски */
+  .risks {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 24px;
+  }
+  .risk-item {
+    display: flex;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid #f3f4f6;
+    font-size: 13.5px;
+    align-items: flex-start;
+  }
+  .risk-item:last-child { border-bottom: 0; }
+  .risk-item .marker { font-size: 14px; flex-shrink: 0; }
+  .risk-item .block-name {
+    color: #6b7280;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    flex-shrink: 0;
+    width: 100px;
+    padding-top: 2px;
+  }
+
+  /* Рычаги */
+  .levers {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 24px;
+  }
+  .lever-item {
+    padding: 10px 0;
+    border-bottom: 1px solid #f3f4f6;
+    font-size: 13.5px;
+  }
+  .lever-item:last-child { border-bottom: 0; }
+  .lever-item .lever-name {
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-right: 8px;
+  }
+  .lever-item .lever-tag {
+    display: inline-block;
+    font-size: 10px;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    background: #f3f4f6;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-right: 8px;
+  }
+
+  /* НОВОЕ: КФБУ-индекс */
+  .kbfu {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 24px;
+  }
+  .kbfu-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-top: 16px;
+  }
+  .kbfu-cell {
+    padding: 16px;
+    border-radius: 8px;
+    background: #f9fafb;
+    text-align: center;
+  }
+  .kbfu-cell.now { background: #fffbeb; border: 1px solid #fbbf24; }
+  .kbfu-cell .stage {
+    font-size: 11px;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+  }
+  .kbfu-cell .score {
+    font-size: 32px;
+    font-weight: 700;
+    color: #1a1a1a;
+  }
+  .kbfu-cell .note {
+    font-size: 12px;
+    color: #4b5563;
+    margin-top: 6px;
+  }
+  .kbfu-list {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #f3f4f6;
+  }
+  .kbfu-list h4 {
+    font-size: 12px;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 10px;
+  }
+  .kbfu-factor {
+    display: flex;
+    gap: 10px;
+    padding: 6px 0;
+    font-size: 13px;
+  }
+  .kbfu-factor .num {
+    font-weight: 700;
+    color: #1a1a1a;
+    width: 30px;
+  }
+  .kbfu-factor .name { font-weight: 600; flex: 1; }
+  .kbfu-factor .horizon {
+    font-size: 11px;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .kbfu-details {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #f3f4f6;
+  }
+  .kbfu-details summary {
+    font-size: 12px;
+    color: #4b5563;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 8px 0;
+    user-select: none;
+  }
+  .kbfu-details summary:hover { color: #1a1a1a; }
+  .kbfu-details[open] summary { margin-bottom: 12px; }
+  .kbfu-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12.5px;
+  }
+  .kbfu-table th, .kbfu-table td {
+    text-align: left;
+    padding: 8px 10px;
+    border-bottom: 1px solid #f3f4f6;
+    vertical-align: top;
+  }
+  .kbfu-table th {
+    font-size: 10.5px;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    background: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  .kbfu-table td.idx { font-weight: 700; color: #6b7280; width: 36px; text-align: center; }
+  .kbfu-table td.factor { font-weight: 600; width: 220px; }
+  .kbfu-table td.score-cell {
+    width: 60px;
+    text-align: center;
+    font-weight: 700;
+  }
+  .kbfu-table td.score-cell.zero { color: #b91c1c; background: #fef2f2; }
+  .kbfu-table td.score-cell.one  { color: #047857; background: #f0fdf4; }
+  .kbfu-table tr.improved td.score-cell.one { background: #dcfce7; }
+  .kbfu-table td.note { font-size: 12px; color: #4b5563; }
+  .kbfu-legend {
+    margin-top: 10px;
+    font-size: 11px;
+    color: #6b7280;
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+  .kbfu-legend .swatch {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+    margin-right: 4px;
+    vertical-align: middle;
+  }
+  .kbfu-legend .swatch.zero { background: #fef2f2; border: 1px solid #fca5a5; }
+  .kbfu-legend .swatch.one  { background: #f0fdf4; border: 1px solid #6ee7b7; }
+  .kbfu-legend .swatch.improved  { background: #dcfce7; border: 1px solid #34d399; }
+
+  /* НОВОЕ: as-is → to-be */
+  .compare {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 24px;
+  }
+  .compare table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 13px; }
+  .compare th, .compare td {
+    text-align: left;
+    padding: 8px 10px;
+    border-bottom: 1px solid #f3f4f6;
+  }
+  .compare th { font-size: 11px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; }
+  .compare td.shift { font-weight: 700; color: #10b981; width: 200px; }
+  .compare td.metric { font-weight: 600; width: 160px; }
+
+  /* НОВОЕ: лендинги */
+  .landings {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 24px;
+  }
+  .landings-row {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #f3f4f6;
+  }
+  .landings-row:first-of-type { margin-top: 12px; padding-top: 0; border-top: 0; }
+  .landings-row h4 {
+    font-size: 12px;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 10px;
+  }
+  .landing {
+    padding: 8px 0;
+    font-size: 13.5px;
+    color: #1a1a1a;
+    font-style: italic;
+  }
+  .landing::before { content: "❝ "; color: #6b7280; font-style: normal; }
+  .landing::after { content: " ❞"; color: #6b7280; font-style: normal; }
+  .landings-pain {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px dashed #e5e7eb;
+    font-size: 12px;
+    color: #6b7280;
+  }
+
+  /* НОВОЕ: удивления */
+  .surprises {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 24px;
+  }
+  .surprise {
+    padding: 10px 0;
+    border-bottom: 1px solid #f3f4f6;
+    font-size: 13.5px;
+  }
+  .surprise:last-child { border-bottom: 0; }
+  .surprise strong { color: #1a1a1a; }
+
+  /* Шаги */
+  .steps {
+    background: #1a1a1a;
+    color: #fff;
+    border-radius: 8px;
+    padding: 24px;
+    margin-bottom: 24px;
+  }
+  .steps .section-title { color: #9ca3af; }
+  .step {
+    display: flex;
+    gap: 16px;
+    padding: 14px 0;
+    border-bottom: 1px solid #374151;
+    font-size: 14.5px;
+  }
+  .step:last-of-type { border-bottom: 0; }
+  .step .num {
+    font-size: 24px;
+    font-weight: 700;
+    color: #fbbf24;
+    min-width: 32px;
+  }
+  .step .step-meta {
+    font-size: 11px;
+    color: #9ca3af;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+  }
+  .step .step-criteria {
+    font-size: 12px;
+    color: #d1d5db;
+    margin-top: 6px;
+  }
+  .checkpoint {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 2px solid #374151;
+    font-size: 14px;
+    color: #d1d5db;
+  }
+  .checkpoint strong { color: #fff; }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    color: #6b7280;
+    font-size: 12px;
+    padding: 16px 0;
+    border-top: 1px solid #e5e7eb;
+  }
+  .footer a { color: #4b5563; }
+
+  /* Печать */
+  @media print {
+    body { background: #fff; padding: 0; }
+    .canvas, .scenarios-grid { page-break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Шапка -->
+  <div class="header">
+    <h1>Канва пивота — km-to-be (h2 v4)</h1>
+    <div class="meta">v1 · 30.04.2026 · ветка feat/canvas-km-to-be · PR #6</div>
+  </div>
+
+  <!-- Hero: гипотеза -->
+  <div class="hero">
+    <div class="label">Базовая гипотеза h2 v4</div>
+    <h2>LLM-прототип отраслевой боли за 2–3 недели за 200–500 тыс. ₽ + продюсер с обязательством по эффективности</h2>
+    <p>Mid-market РФ 1–10 млрд ₽. Активатор-driven outreach Кирилла, лендинги под сценарии «функция × отрасль». Возврат 50% при незапуске прототипа. Корпоративная ценность — методология как отчуждаемый актив (Brains → Grey Hair за 12 мес).</p>
+    <div class="stats">
+      <div class="stat"><div class="num">4/4</div><div class="lbl">Магический треугольник — полная инновация</div></div>
+      <div class="stat"><div class="num">11/20</div><div class="lbl">КФБУ-индекс to-be (was 6/20)</div></div>
+      <div class="stat"><div class="num">60–95</div><div class="lbl">Совокупный SOM год 1, млн ₽</div></div>
+      <div class="stat"><div class="num">×2,6–9,5</div><div class="lbl">Прирост выручки vs as-is</div></div>
+    </div>
+  </div>
+
+  <!-- Среда: 4 силы -->
+  <div class="section-title">Среда модели</div>
+  <div class="environment">
+    <div class="environment-cell">
+      <h3>Рынок</h3>
+      <p>Mid-market 1–10 млрд ₽ ищет автоматизацию для эффективности, не роста. LLM-волна — окно 12–24 мес. Эмпирика 2 продаж × 250 тыс. ₽ за апрель 2026 подтверждает готовность платить.</p>
+    </div>
+    <div class="environment-cell">
+      <h3>Отрасль</h3>
+      <p>Зазор между интеграторами коробок (43–90 тыс. ₽/год) и премиум-консалтингом (5–50 млн ₽). LLM-прототипы 200–500 тыс. ₽ → 1–3 млн ₽ при углублении — ниша недозакрыта.</p>
+    </div>
+    <div class="environment-cell">
+      <h3>Тренды</h3>
+      <p>LLM-волна, окно 12–24 мес. Отраслевые лендинги стали возможны дёшево. Налоги растут, ставка падает — давление на эффективность. Чат-боты и AI-агенты как новые интерфейсы.</p>
+    </div>
+    <div class="environment-cell">
+      <h3>Макроэкономика</h3>
+      <p>OpenAI / Anthropic заблокированы — прототипы строим на GigaChat / YandexGPT. ИТ-кадры в РФ доступны, ставки стабильны. Капитал у клиентов не растёт — давление на маржу mid-market.</p>
+    </div>
+  </div>
+
+  <!-- 4 финальных сценария -->
+  <div class="scenarios">
+    <div class="section-title">4 финальных сценария «функция × отрасль» — приоритет S1 → S2 → S3 → S4</div>
+    <div class="scenarios-grid">
+      <div class="scenario s1">
+        <div class="priority">№1 · Май 2026</div>
+        <h4>S1. Девелопмент × Управление проектами и документами</h4>
+        <div class="lpr">Коммерческий директор / РП объекта</div>
+        <div class="metrics">
+          <div class="metric"><div class="num">350 тыс.</div><div class="lbl">Чек, ₽</div></div>
+          <div class="metric"><div class="num">4–8 нед</div><div class="lbl">Цикл сделки</div></div>
+          <div class="metric"><div class="num">3,6 млрд</div><div class="lbl">SAM, ₽</div></div>
+          <div class="metric"><div class="num">8–13 млн</div><div class="lbl">SOM год 1, ₽</div></div>
+        </div>
+        <div class="signal">🔥 4 публичных кейса: ЛСР, ПИК, Pragmacore, AVA. Жила боли: подрядчики и сроки 10/10, ДДУ через Росреестр 9/10, лид→ипотека 9/10.</div>
+      </div>
+      <div class="scenario s2">
+        <div class="priority">№2 · Май–июнь 2026</div>
+        <h4>S2. Логистика × Управление проектами / ЭДО</h4>
+        <div class="lpr">Директор по логистике / ИТ-директор / Финдир</div>
+        <div class="metrics">
+          <div class="metric"><div class="num">350–500 тыс.</div><div class="lbl">Чек, ₽</div></div>
+          <div class="metric"><div class="num">6–9 нед</div><div class="lbl">Цикл сделки</div></div>
+          <div class="metric"><div class="num">700 млрд</div><div class="lbl">SAM, ₽</div></div>
+          <div class="metric"><div class="num">20–36 млн</div><div class="lbl">SOM год 1, ₽</div></div>
+        </div>
+        <div class="signal">⚡ Регуляторный триггер: 1.03.2026 — реестр экспедиторов ГосЛог; 1.09.2026 — обязательный ЭДО (ЭТрН/ЭПЛ). Окно паники — июнь–август 2026.</div>
+      </div>
+      <div class="scenario s3">
+        <div class="priority">№3 · Июль 2026</div>
+        <h4>S3. Здравоохранение × HR / Onboarding</h4>
+        <div class="lpr">HR-директор сети клиник / Главврач</div>
+        <div class="metrics">
+          <div class="metric"><div class="num">300–400 тыс.</div><div class="lbl">Чек, ₽</div></div>
+          <div class="metric"><div class="num">6–10 нед</div><div class="lbl">Цикл сделки</div></div>
+          <div class="metric"><div class="num">150 млрд</div><div class="lbl">SAM, ₽</div></div>
+          <div class="metric"><div class="num">18–24 млн</div><div class="lbl">SOM год 1, ₽</div></div>
+        </div>
+        <div class="signal">💎 Открытая ниша. Дефицит 23 тыс. врачей + 64 тыс. медсестёр (Минздрав 2025). Окно до закрытия iSpring/Хантфлоу — 12–18 мес.</div>
+      </div>
+      <div class="scenario s4">
+        <div class="priority">№4 · Август+ 2026</div>
+        <h4>S4. Стройка × Управление проектами</h4>
+        <div class="lpr">Тех. директор / Главный инженер проекта</div>
+        <div class="metrics">
+          <div class="metric"><div class="num">350 тыс.</div><div class="lbl">Чек, ₽</div></div>
+          <div class="metric"><div class="num">6–10 нед</div><div class="lbl">Цикл сделки</div></div>
+          <div class="metric"><div class="num">800 млрд</div><div class="lbl">SAM, ₽</div></div>
+          <div class="metric"><div class="num">12–24 млн</div><div class="lbl">SOM год 1, ₽</div></div>
+        </div>
+        <div class="signal">🔥 54,2% объектов в РФ 2025 сданы с задержкой. Низкая ИТ-готовность сегмента. Каналы пересекаются с S1 (конференция «Цифровое строительство»).</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Канва -->
+  <div class="section-title">Канва бизнес-модели (Остервальдер)</div>
+  <div class="canvas">
+    <div class="block partners red">
+      <h2>Ключевые партнёры</h2>
+      <div class="content">Постоянных партнёров на 30.04.2026 нет (latent деактуализирован).
+
+Контрактные исполнители на разработку под пилот.
+
+Поставщики LLM: Сбер GigaChat, Yandex.
+
+Конференции и ассоциации (Движение, ProEstate, Цифровое строительство, Vademecum, АСМАП) — точки доступа к ЛПР.
+
+🔴 Партнёрский gap по 3 функциям: Sales, методолог, Customer Success.</div>
+    </div>
+    <div class="block activities yellow">
+      <h2>Ключевые виды деятельности</h2>
+      <div class="content">Outreach 8–12 ч/нед (3 встречи).
+
+Сборка прототипов 12–16 ч/нед (3–4 параллельных).
+
+📌 Документирование методологии 4–6 ч/нед — закрытие R2 (главный риск).
+
+Pre-sale + дизайн оффера. Валидация интервью. Retention через ЛК + SLA.</div>
+    </div>
+    <div class="block resources red">
+      <h2>Ключевые ресурсы</h2>
+      <div class="content">Кирилл-продюсер (3–4 параллельных пилота — потолок).
+
+Команда: РП, разработчик, бухгалтер.
+
+Методология AJTBD как актив (R2 — 12 мес до Grey Hair).
+
+28 публичных кейсов LLM в РФ. 5 лет кейсов в digital.
+
+Инструменты: GigaChat / YandexGPT / n8n / Telegram.
+
+🔴 Cash-runway — критический фон (R3).</div>
+    </div>
+    <div class="block value green">
+      <h2>Ценностные предложения</h2>
+      <div class="content">LLM-прототип отраслевой боли за 2–3 недели за 200–500 тыс. ₽.
+
+Продюсер с обязательством по эффективности (возврат 50% при незапуске).
+
+4 сценария «функция × отрасль» — каждый с конкретными болями и обезболивающими.
+
+Чем отличаемся от 4 типов конкурентов:
+— интеграторы коробок (43–90 тыс. ₽/год) — нет сценария
+— премиум-консалтинг (5–50 млн ₽) — недоступен mid-market
+— фриланс (50–300 тыс. ₽) — нет ответственности
+— внутренняя команда — нет LLM-экспертизы
+
+Корпоративная ценность — методология как отчуждаемый актив (Brains → Grey Hair).</div>
+    </div>
+    <div class="block relationships green">
+      <h2>Отношения с клиентами</h2>
+      <div class="content">Персональный продюсер с обязательством по эффективности.
+
+4 фазы:
+1. Первый пилот 300–500 тыс. ₽ (возврат 50% при незапуске)
+2. Retention через ЛК + SLA 50–150 тыс. ₽/мес
+3. Апсейл-1: второй пилот через 4–6 мес
+4. Апсейл-2: разработка под ключ 1–3 млн ₽
+
+LTV 12 мес: 500 тыс. – 4 млн ₽ по сценарию.
+
+30–40% клиентов уходят в SLA (h3 retention).</div>
+    </div>
+    <div class="block channels yellow">
+      <h2>Каналы сбыта</h2>
+      <div class="content">Главный — активатор-driven outreach Кирилла (3 встречи/нед).
+
+Лендинг = носитель оффера (страница / PDF / ссылка), не traffic-target.
+
+Подкреп — конференции и бизнес-клубы (Движение, ProEstate, Цифровое строительство, Vademecum, АСМАП).
+
+Эволюция — ЛК + бот-ассистент после первого пилота.
+
+❌ НЕ канал: холодные email, реклама, рекомендации без активации.</div>
+    </div>
+    <div class="block segments yellow">
+      <h2>Потребительские сегменты</h2>
+      <div class="content">Mid-market 1–10 млрд ₽ B2B РФ. 4 сценария «функция × отрасль»:
+
+S1 Девелопмент × PM (350 тыс. ₽, 4–8 нед, SOM 8–13 млн)
+S2 Логистика × ЭДО (350–500 тыс. ₽, 6–9 нед, SOM 20–36 млн)
+S3 Здравоохранение × HR (300–400 тыс. ₽, 6–10 нед, SOM 18–24 млн)
+S4 Стройка × PM (350 тыс. ₽, 6–10 нед, SOM 12–24 млн)
+
+Когорты: тёплые (знакомые + рекомендации) → полу-тёплые (конференции) → холодные (СПАРК / ЕРЗ.РФ / Vademecum / ATI.SU).
+
+⚠️ Outreach-таргеты после аудита требуют пересбора через СПАРК.</div>
+    </div>
+  </div>
+
+  <!-- Издержки и доходы -->
+  <div class="economics">
+    <div class="block yellow">
+      <h2>Структура издержек</h2>
+      <div class="content">Постоянные: ФОТ Кирилла + команды (РП, разработчик, бухгалтер).
+
+Переменные на пилот: контрактные исполнители 50–150 тыс. ₽.
+
+Инструменты: GigaChat / YandexGPT API, n8n hosting, домены.
+
+Outreach: конференции, перелёты, клубы.
+
+📌 Time-cost: документирование методологии — главная инвестиция в R2 (4–6 ч/нед).
+
+Маржа на пилоте 30–60%. Маржа на SLA + апсейле — выше.</div>
+    </div>
+    <div class="block yellow">
+      <h2>Потоки доходов</h2>
+      <div class="content">3 потока:
+• Первый пилот 300–500 тыс. ₽ × 24–36/год = 8–18 млн ₽
+• Апсейл-разработка 1–3 млн ₽ × 8–12/год = 12–36 млн ₽
+• SLA 50–150 тыс. ₽/мес × 30–40% retention = 6–12 млн ₽
+
+Совокупный SOM год 1: 60–95 млн ₽ при пересечении когорт.
+
+Год 2 при удержании +30–50%.
+
+Структура оплаты пилота: 50% аванс / 50% по приёмке.</div>
+    </div>
+  </div>
+
+  <!-- Волшебный треугольник -->
+  <div class="triangle">
+    <div class="section-title">Магический треугольник: 4 из 4 измерений = полная инновация</div>
+    <table>
+      <thead>
+        <tr><th>Измерение</th><th>as-is</th><th>to-be h2 v4</th><th>Сдвиг</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="dim">КТО</td>
+          <td>Универсальные клиенты по рекомендациям</td>
+          <td>Mid-market 1–10 млрд ₽ × конкретный сценарий «функция × отрасль» (S1–S4)</td>
+          <td class="shift">✅</td>
+        </tr>
+        <tr>
+          <td class="dim">ЧТО</td>
+          <td>Полная заказная разработка 6–12 мес</td>
+          <td>LLM-прототип за 2–3 недели за 200–500 тыс. ₽ + продюсер с возвратом 50%</td>
+          <td class="shift">✅</td>
+        </tr>
+        <tr>
+          <td class="dim">КАК</td>
+          <td>Рекомендации + ручная разработка</td>
+          <td>Активатор-driven outreach + LLM-сборка + методология AJTBD</td>
+          <td class="shift">✅</td>
+        </tr>
+        <tr>
+          <td class="dim">ПОЧЕМУ</td>
+          <td>Разовые проекты 1–10 млн ₽</td>
+          <td>Чек 200–500 тыс. ₽ + retention через ЛК и SLA + апсейл-разработка 1–3 млн ₽</td>
+          <td class="shift">✅</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Карта эмпатии -->
+  <div class="empathy">
+    <div class="section-title">Карта эмпатии главного архетипа</div>
+    <div class="empathy-segment">Владелец / коммерческий директор / РП / Тех. директор / HR-директор B2B-компании mid-market 1–10 млрд ₽ выручки в РФ, ищущий короткий пилот автоматизации под конкретную функцию.</div>
+    <div class="empathy-grid">
+      <div class="empathy-cell"><h4>Видит</h4><p>Конкуренты съели долю или сравнялись по цене. Маржа падает, операционные пожары растут. Команда либо недонагружена, либо перегружена ручной рутиной. Внедренцы 1С / Битрикса предлагают «коробку» — не решает функциональную боль.</p></div>
+      <div class="empathy-cell"><h4>Слышит</h4><p>«Надо внедрять ИИ» — повсеместно в медиа. «У соседа автоматизировали [функцию] и сэкономили [метрика]». Инвесторы спрашивают «как у вас с цифровизацией». Сотрудники жалуются на ручную работу.</p></div>
+      <div class="empathy-cell"><h4>Думает и чувствует</h4><p>Тревога потери контроля при росте. Азарт «успеть на ИИ-волну». Страх растянуть внедрение на год и съесть бюджет. Желание видеть результат за 2–3 недели. Не говорит вслух: «текущий подход больше не работает».</p></div>
+      <div class="empathy-cell"><h4>Говорит и делает</h4><p>Публично: «мы за инновации, цифровая трансформация». В реальности: отказывается от больших проектов, ищет короткие пилоты с быстрым ROI. Спрашивает у знакомых: «кто умеет с LLM собрать [конкретное решение]?».</p></div>
+      <div class="empathy-cell"><h4>Тревоги</h4><p>Провалить пилот → разочаровать собственников. Потратить впустую бюджет в кризис. Сорвать сроки → потерять окно ИИ-волны. Команда не примет автоматизацию (change-management). Подрядчик «продаст и забудет».</p></div>
+      <div class="empathy-cell"><h4>Стремления</h4><p>Прототип с реальным эффектом за 2–3 недели. Метрика улучшения, измеримая в его языке (время, ошибки, конверсия, выручка). Инвестиция, которую можно продолжить и развить. Контроль через продюсера. Возможность тиражировать на другие функции.</p></div>
+    </div>
+  </div>
+
+  <!-- Лендинги по сценариям -->
+  <div class="landings">
+    <div class="section-title">Заголовки лендингов по сценариям</div>
+    <div class="landings-row">
+      <h4>S1 Девелопмент</h4>
+      <div class="landing">Соберём картину 50 подрядчиков и сорванных сроков за 3 недели. 350 тыс. ₽. Прототип на LLM, не отчёт.</div>
+      <div class="landing">Электронные ДДУ без приостановок: LLM-валидатор пакета за 3 недели. 350 тыс. ₽. Кейс ЛСР — × 10 скорость документов.</div>
+      <div class="landing">AI-помощник менеджера продаж: подбор ипотечной программы за 1 встречу. 3 недели, 350 тыс. ₽. Бенчмарк AVA — +4% одобрений ипотеки.</div>
+      <div class="landings-pain">Ключевая боль: РП объекта тратит 2–3 ч/день на ручную сборку статуса 50 подрядчиков из чатов. К пятнице картина устаревает, в понедельник — срыв срока.</div>
+    </div>
+    <div class="landings-row">
+      <h4>S2 Логистика</h4>
+      <div class="landing">До 1 сентября — 4 месяца. Прототип ЭДО-помощника для вашей логистики за 2–3 недели.</div>
+      <div class="landing">Утро диспетчера: 30 проблемных рейсов за 40 минут вместо 4 часов. Прототип за 2 недели.</div>
+      <div class="landing">Ваши водители подпишут ЭПЛ через Telegram-бот к 1 сентября. 350 тыс. ₽, 2 недели.</div>
+      <div class="landings-pain">Ключевая боль: между подключением оператора ЭДО и реальной экономией — 5 узлов (интеграция с 1С, обучение водителей, разбор заторов, претензии, маршруты). Каждый — точка штрафа или потери маржи.</div>
+    </div>
+    <div class="landings-row">
+      <h4>S3 Здравоохранение</h4>
+      <div class="landing">Онбординг врача за 7 дней вместо 30 — Telegram-бот под вашу сеть клиник за 2 недели и 300 тыс. ₽.</div>
+      <div class="landing">Минздрав: −23 тысячи врачей. Каждый ушедший в первые 90 дней — 1,5 зарплаты впустую. Соберём онбординг-бот вашей сети за 14 дней.</div>
+      <div class="landing">Текучесть медсестёр 25–40% год. Покажем, кто в зоне риска, за 30 дней до заявления — pulse-бот за 2 недели.</div>
+      <div class="landings-pain">Ключевая боль: в дефиците кадров главное конкурентное преимущество — не подбор, а удержание. Сегодня его никто не автоматизирует под медицину. Каждый ушедший в первые 90 дней = 1,5–3 зарплаты убытков.</div>
+    </div>
+    <div class="landings-row">
+      <h4>S4 Стройка</h4>
+      <div class="landing">Узнайте о провале сроков объекта раньше заказчика. Прототип контроля за 3 недели — 350 тыс. ₽.</div>
+      <div class="landing">КС-2 без расхождений со сметой. LLM сверяет акт, журнал и смету за 5 минут — 400 тыс. ₽ за 3 недели.</div>
+      <div class="landing">Тех. директор видит риск срыва за 14 дней до критической даты. Прототип за 21 день — 350 тыс. ₽.</div>
+      <div class="landings-pain">Ключевая боль: 54,2% объектов в РФ 2025 сданы с задержкой. Штрафы 0,1–0,5% стоимости работ за день. На объекте 1 млрд ₽ — потеря 1–5 млн ₽/мес штрафов. Тех. директор узнаёт о риске последним.</div>
+    </div>
+  </div>
+
+  <!-- Риски -->
+  <div class="risks">
+    <div class="section-title">Риски и слабые места (по убыванию остроты)</div>
+    <div class="risk-item">
+      <div class="marker">🔴</div>
+      <div class="block-name">R2 — Ресурсы</div>
+      <div>Методология не задокументирована. Кирилл — единая точка отказа. Закрывается через 4–6 ч/нед на документирование (12 мес до Brains → Grey Hair).</div>
+    </div>
+    <div class="risk-item">
+      <div class="marker">🔴</div>
+      <div class="block-name">R3 — Финансы</div>
+      <div>Cash-runway критический фон. Митигация — быстрая первая продажа в S1 (май 2026, цикл 4–8 нед).</div>
+    </div>
+    <div class="risk-item">
+      <div class="marker">🟡</div>
+      <div class="block-name">Окно LLM</div>
+      <div>Лидеры (Profitbase, hh.ru/Хантфлоу AI, iSpring) встроят ИИ в коробку за 12–18 мес. Скорость запуска критична.</div>
+    </div>
+    <div class="risk-item">
+      <div class="marker">🟡</div>
+      <div class="block-name">Сценарии S1/S4</div>
+      <div>Близкие отрасли — 3 из 4 AJTBD по управлению проектами. Митигация — отраслевая специфика в каждом промпте; разные ЛПР, лендинги, регулятор.</div>
+    </div>
+    <div class="risk-item">
+      <div class="marker">🟡</div>
+      <div class="block-name">Сегменты</div>
+      <div>Outreach-таргеты после аудита 2026-04-30 требуют пересбора через СПАРК / ЕРЗ.РФ / Vademecum.</div>
+    </div>
+    <div class="risk-item">
+      <div class="marker">🟡</div>
+      <div class="block-name">Партнёры</div>
+      <div>Партнёрский gap по 3 функциям (Sales, методолог, Customer Success). Решение — Стадия 4 / Шаг 2 (июнь 2026).</div>
+    </div>
+    <div class="risk-item">
+      <div class="marker">🟡</div>
+      <div class="block-name">Доходы</div>
+      <div>Маржа на пилоте 30–60% (наценка &lt;×4). Высокая маржа только на SLA + апсейле — нужна высокая retention-конверсия.</div>
+    </div>
+    <div class="risk-item">
+      <div class="marker">🟡</div>
+      <div class="block-name">Каналы</div>
+      <div>Канал держится на одном Кирилле, не масштабируется выше 3–4 параллельных пилотов. Sales-функция отсутствует.</div>
+    </div>
+  </div>
+
+  <!-- Рычаги: 6 паттернов Гассмана -->
+  <div class="levers">
+    <div class="section-title">Рычаги: 6 паттернов Гассмана + 5 стилей Остервальдера</div>
+    <div class="lever-item">
+      <span class="lever-tag">подобие</span>
+      <span class="lever-name">№39 Провайдер решений</span>
+      Комплексное «всё в одном». LLM-прототип + продюсер + retention в одном пакете. Параллель — IBM Global Services, «1С:Внедрение».
+    </div>
+    <div class="lever-item">
+      <span class="lever-tag">подобие</span>
+      <span class="lever-name">№11 Гарантированные работоспособность и наличие</span>
+      Возврат 50% при незапуске + SLA-ретейнер. Параллель — Rolls-Royce «Power by the hour».
+    </div>
+    <div class="lever-item">
+      <span class="lever-tag">подобие</span>
+      <span class="lever-name">№26 Массовая кастомизация</span>
+      Каждый прототип уникален под клиента, методология сборки серийна. Параллель — Dell-конфигуратор.
+    </div>
+    <div class="lever-item">
+      <span class="lever-tag">подобие</span>
+      <span class="lever-name">№13 Дирижёр</span>
+      Кирилл координирует контрактных исполнителей + LLM-провайдеров + ЛПР клиента. Параллель — Nike, Apple.
+    </div>
+    <div class="lever-item">
+      <span class="lever-tag">конфронтация</span>
+      <span class="lever-name">№33 Оцифровывание</span>
+      Перевод реального процесса клиента в цифру через LLM. Параллель — Spotify, Netflix.
+    </div>
+    <div class="lever-item">
+      <span class="lever-tag">провокация</span>
+      <span class="lever-name">№10 Бритва и лезвие</span>
+      Первый пилот 300–500 тыс. ₽ — низкий порог входа. SLA + апсейл-разработка — высокий LTV. Параллель — Gillette, HP-принтеры.
+    </div>
+    <div class="lever-item">
+      <span class="lever-tag">backlog 12+ мес</span>
+      <span class="lever-name">№23 Лицензирование</span>
+      Методология как актив для лицензирования сотрудникам и партнёрам. Конечная точка R2-закрытия (Brains → Grey Hair).
+    </div>
+  </div>
+
+  <!-- КФБУ-индекс -->
+  <div class="kbfu">
+    <div class="section-title">КФБУ-индекс модели (методика Гребенюка, 20 факторов)</div>
+    <div class="kbfu-row">
+      <div class="kbfu-cell">
+        <div class="stage">as-is</div>
+        <div class="score">6 / 20</div>
+        <div class="note">Универсальная разработка, 100% от 3 якорей, методология не задокументирована</div>
+      </div>
+      <div class="kbfu-cell now">
+        <div class="stage">to-be (сейчас)</div>
+        <div class="score">11 / 20</div>
+        <div class="note">+5 пунктов = серьёзная переделка</div>
+      </div>
+      <div class="kbfu-cell">
+        <div class="stage">через 12 мес</div>
+        <div class="score">16 / 20</div>
+        <div class="note">После Brains → Grey Hair миграции</div>
+      </div>
+    </div>
+    <div class="kbfu-list">
+      <h4>Топ-5 факторов с самым простым приростом 0 → 1</h4>
+      <div class="kbfu-factor">
+        <div class="num">№14</div>
+        <div class="name">Низкая потребность в кредитовании</div>
+        <div class="horizon">~ 1 мес — первая продажа S1</div>
+      </div>
+      <div class="kbfu-factor">
+        <div class="num">№5</div>
+        <div class="name">Повторные продажи</div>
+        <div class="horizon">~ 1–2 мес — первая SLA-подписка</div>
+      </div>
+      <div class="kbfu-factor">
+        <div class="num">№10</div>
+        <div class="name">Диверсификация клиентов</div>
+        <div class="horizon">~ 2–3 мес — запуск S2 + S3</div>
+      </div>
+      <div class="kbfu-factor">
+        <div class="num">№6</div>
+        <div class="name">Эффект сложного процента</div>
+        <div class="horizon">~ 6–9 мес — документирование методологии</div>
+      </div>
+      <div class="kbfu-factor">
+        <div class="num">№9 + №12</div>
+        <div class="name">Зависимость от персонала + масштабируемость</div>
+        <div class="horizon">~ 12 мес — Brains → Grey Hair миграция</div>
+      </div>
+    </div>
+
+    <details class="kbfu-details">
+      <summary>📊 Полный список 20 факторов с оценками и пояснениями ▾</summary>
+      <table class="kbfu-table">
+        <thead>
+          <tr>
+            <th>№</th>
+            <th>Фактор</th>
+            <th>as-is</th>
+            <th>to-be</th>
+            <th>12 мес</th>
+            <th>Пояснение</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="idx">1</td>
+            <td class="factor">Существование рынка</td>
+            <td class="score-cell one">1</td>
+            <td class="score-cell one">1</td>
+            <td class="score-cell one">1</td>
+            <td class="note">Рынок ИТ-автоматизации mid-market РФ существует, спрос есть. Стабильно 1 во всех состояниях.</td>
+          </tr>
+          <tr class="improved">
+            <td class="idx">2</td>
+            <td class="factor">Рост рынка</td>
+            <td class="score-cell zero">0</td>
+            <td class="score-cell one">1</td>
+            <td class="score-cell one">1</td>
+            <td class="note">as-is: универсальная разработка в стагнирующей нише (рекомендательный канал, ×6 за 2 года). to-be: фокус на LLM-волне +13–17% YoY у выбранных отраслей.</td>
+          </tr>
+          <tr class="improved">
+            <td class="idx">3</td>
+            <td class="factor">Низкая консолидация</td>
+            <td class="score-cell zero">0</td>
+            <td class="score-cell one">1</td>
+            <td class="score-cell one">1</td>
+            <td class="note">as-is: рекомендательный канал доминируется крупнейшими цифровыми агентствами. to-be: ниша «LLM-прототипы 200–500 тыс. ₽ с продюсером» — без доминанта.</td>
+          </tr>
+          <tr>
+            <td class="idx">4</td>
+            <td class="factor">Наценка ≥ ×4</td>
+            <td class="score-cell zero">0</td>
+            <td class="score-cell zero">0</td>
+            <td class="score-cell zero">0</td>
+            <td class="note">Маржа на пилоте 30–60% = ×2,3. На SLA — ×4+, на апсейле — ×3+. Среднее по портфелю — пограничное и не дотягивает до уверенного 1.</td>
+          </tr>
+          <tr class="improved">
+            <td class="idx">5</td>
+            <td class="factor">Повторные продажи</td>
+            <td class="score-cell zero">0</td>
+            <td class="score-cell zero">0</td>
+            <td class="score-cell one">1</td>
+            <td class="note">as-is: разовые проекты по рекомендациям, retention не отслеживался. to-be: запланированы SLA-подписки (h3 retention) и апсейлы. Закрывается первой SLA-подпиской в Шаге 2 (июнь 2026).</td>
+          </tr>
+          <tr class="improved">
+            <td class="idx">6</td>
+            <td class="factor">Эффект сложного процента</td>
+            <td class="score-cell zero">0</td>
+            <td class="score-cell zero">0</td>
+            <td class="score-cell one">1</td>
+            <td class="note">as-is: каждый проект с нуля, методология не накапливается. Закрывается через документирование методологии — каждый пилот удешевляет следующий. Прирост за 6–9 мес.</td>
+          </tr>
+          <tr>
+            <td class="idx">7</td>
+            <td class="factor">Сильный бренд</td>
+            <td class="score-cell zero">0</td>
+            <td class="score-cell zero">0</td>
+            <td class="score-cell zero">0</td>
+            <td class="note">Бренд в digital-нише есть (5 лет), но не в новой нише «продюсер LLM-прототипов». За 12 мес — не успеет окрепнуть, требует контента и публичных кейсов.</td>
+          </tr>
+          <tr>
+            <td class="idx">8</td>
+            <td class="factor">Нечестное конкурентное преимущество</td>
+            <td class="score-cell one">1</td>
+            <td class="score-cell one">1</td>
+            <td class="score-cell one">1</td>
+            <td class="note">5 лет опыта в digital + знание клиента mid-market + методология AJTBD как актив. Стартовое преимущество есть и сохраняется.</td>
+          </tr>
+          <tr class="improved">
+            <td class="idx">9</td>
+            <td class="factor">Минимальная зависимость от персонала</td>
+            <td class="score-cell zero">0</td>
+            <td class="score-cell zero">0</td>
+            <td class="score-cell one">1</td>
+            <td class="note">as-is и to-be: Кирилл — единая точка отказа (3–4 параллельных пилота — потолок). Закрывается Brains → Grey Hair миграцией за 12 мес — методология отчуждается.</td>
+          </tr>
+          <tr class="improved">
+            <td class="idx">10</td>
+            <td class="factor">Диверсификация клиентов и поставщиков</td>
+            <td class="score-cell zero">0</td>
+            <td class="score-cell zero">0</td>
+            <td class="score-cell one">1</td>
+            <td class="note">as-is: 100% выручки от 3 якорных клиентов. to-be (сейчас): только S1 запущен. Закрывается запуском 3 сценариев в Шаге 3 (S1+S2+S3, июль 2026) — диверсификация по 4 отраслям.</td>
+          </tr>
+          <tr>
+            <td class="idx">11</td>
+            <td class="factor">Сезонная устойчивость</td>
+            <td class="score-cell one">1</td>
+            <td class="score-cell one">1</td>
+            <td class="score-cell one">1</td>
+            <td class="note">B2B-mid-market без ярко выраженной сезонности. Исключение — S2 с триггером 1 сентября 2026, но это разовое окно, не сезонная зависимость модели.</td>
+          </tr>
+          <tr class="improved">
+            <td class="idx">12</td>
+            <td class="factor">Лёгкая масштабируемость</td>
+            <td class="score-cell zero">0</td>
+            <td class="score-cell zero">0</td>
+            <td class="score-cell one">1</td>
+            <td class="note">as-is и to-be: рост требует найма каждого исполнителя пропорционально пилотам. Закрывается Brains → Grey Hair миграцией: методология применима сотрудниками без присутствия Кирилла.</td>
+          </tr>
+          <tr>
+            <td class="idx">13</td>
+            <td class="factor">Соответствие социальной повестке</td>
+            <td class="score-cell one">1</td>
+            <td class="score-cell one">1</td>
+            <td class="score-cell one">1</td>
+            <td class="note">Импортозамещение + ИИ-волна РФ — нейтрально-позитивная репутация. Прототипы на GigaChat / YandexGPT (РФ-инфраструктура) усиливают позицию.</td>
+          </tr>
+          <tr>
+            <td class="idx">14</td>
+            <td class="factor">Низкая потребность в кредитовании</td>
+            <td class="score-cell zero">0</td>
+            <td class="score-cell zero">0</td>
+            <td class="score-cell zero">0</td>
+            <td class="note">as-is и to-be: R3 cash-runway критичен — пивот в кэш-разрыве. Первая продажа S1 пополняет runway, но устойчивый buffer — задача 24 мес. В рамках 12 мес консервативно — 0.</td>
+          </tr>
+          <tr>
+            <td class="idx">15</td>
+            <td class="factor">Высокая насмотренность собственника</td>
+            <td class="score-cell one">1</td>
+            <td class="score-cell one">1</td>
+            <td class="score-cell one">1</td>
+            <td class="note">5 лет в digital, личный опыт ЛК для застройщиков, релевантная экспертиза в S1 и косвенно в S4. Стабильно 1.</td>
+          </tr>
+          <tr class="improved">
+            <td class="idx">16</td>
+            <td class="factor">Демократизация недоступного</td>
+            <td class="score-cell zero">0</td>
+            <td class="score-cell one">1</td>
+            <td class="score-cell one">1</td>
+            <td class="note">as-is: заказная разработка как у больших — недоступна mid-market по цене. to-be: LLM-решения 200–500 тыс. ₽ для mid-market, которые раньше получал только enterprise за 5–50 млн ₽.</td>
+          </tr>
+          <tr class="improved">
+            <td class="idx">17</td>
+            <td class="factor">Узкая целевая сегментация</td>
+            <td class="score-cell zero">0</td>
+            <td class="score-cell one">1</td>
+            <td class="score-cell one">1</td>
+            <td class="note">as-is: «универсальный клиент по рекомендации» без сегментации. to-be: 4 конкретных сценария «функция × отрасль» с явным ЛПР, болью и метрикой. Сильный сдвиг.</td>
+          </tr>
+          <tr class="improved">
+            <td class="idx">18</td>
+            <td class="factor">Комплексное решение</td>
+            <td class="score-cell zero">0</td>
+            <td class="score-cell one">1</td>
+            <td class="score-cell one">1</td>
+            <td class="note">as-is: только разработка по брифу, без диагностики и сопровождения. to-be: прототип + продюсер + retention в одном пакете, с возвратом 50% при незапуске.</td>
+          </tr>
+          <tr>
+            <td class="idx">19</td>
+            <td class="factor">Качественная unit-экономика</td>
+            <td class="score-cell zero">0</td>
+            <td class="score-cell zero">0</td>
+            <td class="score-cell zero">0</td>
+            <td class="note">Маржа 30–60% на пилоте — пограничное. На SLA + апсейле выше. Закрывается высоким SLA-retention (30–40%), но за 12 мес до уверенного индекс-уровня (повторяемая прибыльная ячейка) не дотянется.</td>
+          </tr>
+          <tr class="improved">
+            <td class="idx">20</td>
+            <td class="factor">Аутсорсинг неключевых процессов</td>
+            <td class="score-cell one">1</td>
+            <td class="score-cell one">1</td>
+            <td class="score-cell one">1</td>
+            <td class="note">as-is: частично (использовали внешних подрядчиков, LLM без системного аутсорсинга — округлено к 1). to-be: системный аутсорс — контрактные исполнители на пилот + LLM-провайдеры (Сбер, Yandex).</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="kbfu-legend">
+        <span><span class="swatch one"></span>1 — соответствует</span>
+        <span><span class="swatch zero"></span>0 — не соответствует</span>
+        <span><span class="swatch improved"></span>сдвиг 0 → 1 относительно as-is или to-be</span>
+        <span>Итого as-is: 6/20 · to-be: 11/20 · через 12 мес: 16/20.</span>
+      </div>
+    </details>
+  </div>
+
+  <!-- Сравнение as-is → to-be -->
+  <div class="compare">
+    <div class="section-title">Сравнение as-is → to-be в одной таблице</div>
+    <table>
+      <thead>
+        <tr><th>Параметр</th><th>as-is (km-as-is)</th><th>to-be (km-to-be h2 v4)</th><th>Сдвиг</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="metric">Гипотеза модели</td>
+          <td>Универсальная заказная разработка по рекомендациям</td>
+          <td>LLM-прототип + продюсер за 200–500 тыс. ₽</td>
+          <td class="shift">Полный пивот</td>
+        </tr>
+        <tr>
+          <td class="metric">КФБУ-индекс</td>
+          <td>6/20</td>
+          <td>11/20 → 16/20 через 12 мес</td>
+          <td class="shift">+5 → +10</td>
+        </tr>
+        <tr>
+          <td class="metric">Магический треугольник</td>
+          <td>—</td>
+          <td>4/4 (полная инновация)</td>
+          <td class="shift">—</td>
+        </tr>
+        <tr>
+          <td class="metric">SWOT по 9 блокам</td>
+          <td>5🔴 4🟡 0🟢</td>
+          <td>0🔴 5🟡 4🟢 (после плана)</td>
+          <td class="shift">Сильный сдвиг</td>
+        </tr>
+        <tr>
+          <td class="metric">Главный риск</td>
+          <td>Уход команды через ~60 дней при отсутствии продаж</td>
+          <td>R2 (методология) + R3 (cash-runway)</td>
+          <td class="shift">Со страт. на стратегические</td>
+        </tr>
+        <tr>
+          <td class="metric">Выручка год 1</td>
+          <td>~10 млн ₽ (без пивота)</td>
+          <td>26–66 млн ₽ базовый, 60–95 млн ₽ целевой</td>
+          <td class="shift">×2,6 – ×9,5</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Главные удивления -->
+  <div class="surprises">
+    <div class="section-title">Главные «удивления» research</div>
+    <div class="surprise"><strong>S1 Девелопмент</strong> в top-down — 7-е место (15 баллов из 30). В bottom-up — лидер: 4 публичных кейса (ЛСР, ПИК, Pragmacore, AVA). Top-down занижен из-за длинного цикла внешних продаж, но операционная автоматизация (PM/документы) — горячая точка. <strong>Перевернул приоритет: S1 стал #1, не #5.</strong></div>
+    <div class="surprise"><strong>Триггер ЭДО в логистике</strong> оказался не 1 марта, а <strong>1 сентября 2026</strong>. С 1 марта — только реестр экспедиторов «ГосЛог». Окно паники сместилось на июнь–август 2026. Без аудита запустили бы оффер на 6 мес раньше события и потеряли темп.</div>
+    <div class="surprise"><strong>Регулятор для HR в здравоохранении НЕ страшный</strong> — вопреки ожиданиям. Работа НЕ с медданными пациентов = другая регуляторика, не наш скоуп. Это открыло S3 как реалистичный сценарий с диверсификацией по отраслям.</div>
+    <div class="surprise"><strong>Domconnect оказался телекомом</strong>, не девелопером. «Прямой бенчмарк» AVA + Domconnect для S1 был усилен ошибочно. Аудит снял усиление, но S1 остаётся самым верифицированным сценарием за счёт остальных 4 кейсов.</div>
+  </div>
+
+  <!-- 3 шага -->
+  <div class="steps">
+    <div class="section-title">Три ближайших шага (Recommendations 30 / 60 / 90 дней)</div>
+    <div class="step">
+      <div class="num">1</div>
+      <div>
+        <div class="step-meta">День 1–30 · май 2026</div>
+        <strong>Первый пилот в S1.</strong> 5 решенческих интервью с ЛПР девелоперов по жиле боли (W3 подрядчики и сроки, W5 ДДУ через Росреестр, W6 лид → ипотека). Первая продажа 350 тыс. ₽ за 2–3 недели. Каркас документации методологии.
+        <div class="step-criteria">Критерии успеха: 3 из 5 ЛПР подтверждают чек/боль (R1+R4 закрыты), 1 договор подписан + 50% аванс получен (R3 пополнен), шаблон AJTBD-первый-пилот зафиксирован.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="num">2</div>
+      <div>
+        <div class="step-meta">День 31–60 · июнь 2026</div>
+        <strong>Запуск S2 + первый retention.</strong> Первая SLA-подписка от клиента S1 (КФБУ №5 ✅). Запуск S2 — 5 интервью + первая продажа (триггер 1 сентября — окно сжатое). Решение по партнёру: нанимать ли постоянного на retention/expansion.
+        <div class="step-criteria">Критерии успеха: 1 SLA-подписка от S1, 1 договор в S2, решение по партнёру зафиксировано, 1 раздел методологии задокументирован.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="num">3</div>
+      <div>
+        <div class="step-meta">День 61–90 · июль 2026</div>
+        <strong>S3 + апсейл-разработка + первый пересмотр КФБУ.</strong> Запуск S3 (Здравоохранение × HR/Onboarding) — диверсификация (КФБУ №10 ✅). Первый апсейл-проект 1–3 млн ₽ от клиента S1. Пересмотр КФБУ-индекса с фиксацией прироста.
+        <div class="step-criteria">Критерии успеха: 3 пилота в продакшене (S1, S2, S3), 1 апсейл 1–3 млн ₽ запущен (КФБУ №19 ✅), индекс ≥ 14/20, методология ~30%.</div>
+      </div>
+    </div>
+    <div class="checkpoint">
+      <strong>Точка проверки через 90 дней:</strong> 3 активных пилота, КФБУ 14/20, методология ~30%, 1 партнёр, 1 SLA-подписка. Если 3 из 5 ЛПР в Шаге 1 не подтверждают чек — пивот сценария или замена на альтернативу из шорт-листа scoring.md (S5 B2B-сервисы × PM или S6 Mid-market × Бухгалтерия).
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <p>Источники: <a href="km-to-be.md">km-to-be.md</a> · <a href="../research/">research/</a> · <a href="../research/segments/">segments/</a> · <a href="../research/segments/recommendation.md">recommendation.md</a> · <a href="../research/segments/audit.md">audit.md</a> · <a href="../research/h2-rat.md">h2-rat.md</a></p>
+    <p>Бизнес-модель Кирилла. Канва пивота на 30.04.2026. Шаблон: <a href="../templates/dashboard.html">templates/dashboard.html</a> с расширениями (4 сценария, треугольник, лендинги, КФБУ, as-is→to-be, удивления).</p>
+  </div>
+
+</div>
+</body>
+</html>
