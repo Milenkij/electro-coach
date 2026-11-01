@@ -1,6 +1,6 @@
 ---
 name: "business-model-canvas"
-description: "[]"
+description: "Использовать для Business Model Canvas в ElectroCoach: новый канвас продукта, гипотезы, сегмента или конкурента и пересмотр существующего канваса."
 ---
 
 # Business Model Canvas — project entry point
